@@ -1,4 +1,5 @@
 projects/.vs
-bin/Debug/opencv_world4120d.dll
+bin
+lib
 projects/event_bus
 temp

@@ -1,5 +1,4 @@
-projects/.vs/IndustrialInspection/v17/Solution.VC.db
+projects/.vs
 bin/Debug/opencv_world4120d.dll
-projects/.vs/IndustrialInspection/v17/.suo
-projects/.vs/IndustrialInspection/v17/Browse.VC.db
-projects/.vs/IndustrialInspection/v17/DocumentLayout.json
+projects/event_bus
+temp

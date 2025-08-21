@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UI>
+    <GroupBox title="参数设置">
+        <Parameter type="ComboBox">
+            <Info key="mode" label="模式"/>
+            <Options default="normal">
+                <Item value="normal" label="正常"/>
+                <Item value="advanced" label="高级"/>
+            </Options>
+            <Binding signal="currentTextChanged">
+                <On value="normal">
+                    <Enable keys="retry_count threshold"/>
+                </On>
+                <On value="advanced">
+                    <Disable keys="retry_count threshold"/>
+                </On>
+            </Binding>
+        </Parameter>
+
+        <Parameter type="SpinBox">
+            <Info key="retry_count" label="重试次数" value="3" min="0" max="10" step="1"/>
+        </Parameter>
+
+        <Parameter type="DoubleSpinBox">
+            <Info key="threshold" label="阈值" value="0.5" min="0.0" max="1.0" step="0.1"/>
+        </Parameter>
+    </GroupBox>
+</UI>

@@ -1,0 +1,5 @@
+﻿   Qt/MSBuild: 3.4.0.1
+  Reading Qt configuration (C:/Qt/6.8.2/msvc2022_64/bin/qmake)
+   Qt: 6.8.2
+  camera_view.cpp
+  camera_view.vcxproj -> D:\FuGuang\IndustrialInspection\lib\Debug\plugins\camera_view.dll

@@ -1,0 +1,8 @@
+﻿   Qt/MSBuild: 3.4.0.1
+   Qt: 6.8.2
+  moc IndustrialInspection.h
+  IndustrialInspection.cpp
+  main.cpp
+  moc_IndustrialInspection.cpp
+IndustrialInspection.obj : error LNK2019: 无法解析的外部符号 "__declspec(dllimport) public: class QWidget * __cdecl camera_view::widget(void)const " (__imp_?widget@camera_view@@QEBAPEAVQWidget@@XZ)，函数 "public: void __cdecl IndustrialInspection::load_plugins(void)" (?load_plugins@IndustrialInspection@@QEAAXXZ) 中引用了该符号
+D:\FuGuang\IndustrialInspection\projects\x64\Debug\IndustrialInspection.exe : fatal error LNK1120: 1 个无法解析的外部命令

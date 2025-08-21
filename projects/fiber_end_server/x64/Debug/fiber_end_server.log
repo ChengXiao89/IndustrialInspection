@@ -1,0 +1,8 @@
+﻿   Qt/MSBuild: 3.4.0.1
+  Reading Qt configuration (C:/Qt/6.8.2/msvc2022_64/bin/qmake)
+   Qt: 6.8.2
+  moc server.h
+  main.cpp
+  server.cpp
+  moc_server.cpp
+  fiber_end_server.vcxproj -> D:\FuGuang\IndustrialInspection\projects\x64\Debug\fiber_end_server.exe

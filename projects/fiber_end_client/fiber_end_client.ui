@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>fiber_end_clientClass</class>
+ <widget class="QMainWindow" name="fiber_end_clientClass">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>400</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>fiber_end_client</string>
+  </property>
+  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_new_connection"/>
+   <addaction name="action_disconnect"/>
+   <addaction name="action_stop_server"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="action_new_connection">
+   <property name="icon">
+    <iconset resource="fiber_end_client.qrc">
+     <normaloff>:/fiber_end_client/icons/new_connection.png</normaloff>:/fiber_end_client/icons/new_connection.png</iconset>
+   </property>
+   <property name="text">
+    <string>建立连接</string>
+   </property>
+   <property name="toolTip">
+    <string>建立连接...</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="action_disconnect">
+   <property name="icon">
+    <iconset resource="fiber_end_client.qrc">
+     <normaloff>:/fiber_end_client/icons/disconnect.png</normaloff>:/fiber_end_client/icons/disconnect.png</iconset>
+   </property>
+   <property name="text">
+    <string>断开连接</string>
+   </property>
+   <property name="toolTip">
+    <string>断开连接...</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="action_stop_server">
+   <property name="icon">
+    <iconset resource="fiber_end_client.qrc">
+     <normaloff>:/fiber_end_client/icons/stop_server.png</normaloff>:/fiber_end_client/icons/stop_server.png</iconset>
+   </property>
+   <property name="text">
+    <string>停止服务</string>
+   </property>
+   <property name="toolTip">
+    <string>停止服务...</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="fiber_end_client.qrc"/>
+ </resources>
+ <connections/>
+</ui>

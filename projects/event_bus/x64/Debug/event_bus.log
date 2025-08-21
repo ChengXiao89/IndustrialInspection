@@ -1,0 +1,113 @@
+﻿   Qt/MSBuild: 3.4.0.1
+  Reading Qt configuration (C:/Qt/6.8.2/msvc2022_64/bin/qmake)
+   Qt: 6.8.2
+  moc event_bus.h
+  event_bus.cpp
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x5a9 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x5ab 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x5ac 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x5af 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x5b1 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x5b2 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x61a 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x61c 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x61d 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x61e 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x61f 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x623 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x626 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x628 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x62a 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x62d 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x62e 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x630 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x632 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x635 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x636 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x638 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x639 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x63a 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x63b 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x63f 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.cpp(1,1): warning C4828: 文件包含在偏移 0x640 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x38 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x3a 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x3b 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x3c 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x3e 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x40 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x45 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x48 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x4a 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x4b 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x50 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x51 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x54 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“event_bus.cpp”)
+  
+  moc_event_bus.cpp
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x38 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“x64/Debug/qt/moc/moc_event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x3a 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“x64/Debug/qt/moc/moc_event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x3b 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“x64/Debug/qt/moc/moc_event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x3c 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“x64/Debug/qt/moc/moc_event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x3e 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“x64/Debug/qt/moc/moc_event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x40 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“x64/Debug/qt/moc/moc_event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x45 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“x64/Debug/qt/moc/moc_event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x48 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“x64/Debug/qt/moc/moc_event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x4a 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“x64/Debug/qt/moc/moc_event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x4b 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“x64/Debug/qt/moc/moc_event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x50 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“x64/Debug/qt/moc/moc_event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x51 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“x64/Debug/qt/moc/moc_event_bus.cpp”)
+  
+D:\FuGuang\IndustrialInspection\projects\event_bus\event_bus.h(1,1): warning C4828: 文件包含在偏移 0x54 处开始的字符，该字符在当前源字符集中无效(代码页 65001)。
+  (编译源文件“x64/Debug/qt/moc/moc_event_bus.cpp”)
+  
+    正在创建库 D:\FuGuang\IndustrialInspection\projects\x64\Debug\event_bus.lib 和对象 D:\FuGuang\IndustrialInspection\projects\x64\Debug\event_bus.exp
+  event_bus.vcxproj -> D:\FuGuang\IndustrialInspection\projects\x64\Debug\event_bus.dll

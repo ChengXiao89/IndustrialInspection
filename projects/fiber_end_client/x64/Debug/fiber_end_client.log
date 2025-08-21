@@ -1,0 +1,7 @@
+﻿   Qt/MSBuild: 3.4.0.1
+   Qt: 6.8.2
+  fiber_end_client.cpp
+  main.cpp
+  qrc_fiber_end_client.cpp
+  moc_fiber_end_client.cpp
+  fiber_end_client.vcxproj -> D:\FuGuang\IndustrialInspection\projects\x64\Debug\fiber_end_client.exe

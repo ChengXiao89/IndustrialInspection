@@ -1,0 +1,26 @@
+<UI>
+    <GroupBox title="参数设置">
+        <Parameter type="LineEdit">
+            <Info key="username" label="用户名" value="admin" inputType="string"  enable="false"/>
+        </Parameter>
+
+        <Parameter type="SpinBox">
+            <Info key="retry_count" label="重试次数" value="3" min="0" max="10" step="1" enable="false"/>
+        </Parameter>
+
+        <Parameter type="DoubleSpinBox">
+            <Info key="threshold" label="阈值" value="0.5" min="0.0" max="1.0" step="0.1" enable="false"/>
+        </Parameter>
+
+        <Parameter type="ComboBox">
+            <Info key="mode" label="模式" default="normal" enable="false"/>
+            <Options>
+                <Item value="normal" label="正常模式"/>
+                <Item value="advanced" label="高级模式"/>
+            </Options>
+            <Binding>
+                <DisableIf value="advanced" keys="retry_count threshold"/>
+            </Binding>
+        </Parameter>
+    </GroupBox>
+</UI>

@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/fiber_end_client">
+        <file>icons/disconnect.png</file>
+        <file>icons/stop_server.png</file>
+        <file>icons/new_connection.png</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,6 @@
+﻿   Qt/MSBuild: 3.4.0.1
+  Reading Qt configuration (C:/Qt/6.8.2/msvc2022_64/bin/qmake)
+   Qt: 6.8.2
+  moc Camera_View.h
+   D:\FuGuang\IndustrialInspection\projects\Plugin_Camera_View\Camera_View.h(12:1): error: Undefined interface
+C:\Users\Administrator\AppData\Local\QtMsBuild\qt_work.targets(136,5): error MSB4181: “QtRunWork”任务返回了 false，但未记录错误。

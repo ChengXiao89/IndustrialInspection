@@ -11,8 +11,12 @@ void test_detect_fiber_end(const std::string& input_path, const std::string& out
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
+    clock_t t1 = clock();
     test_detect_fiber_end("../../test_images/test_fiber_end.jpg", 
 						"../../test_images/test_fiber_end_out.jpg");
+    clock_t t2 = clock();
+
+    std::cout << "use time " << t2 - t1 << " ms" << std::endl;
     return 0;
 }
 

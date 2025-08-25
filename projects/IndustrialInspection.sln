@@ -68,6 +68,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_basic_algorithm", "tes
 		{B161D6A1-F0AE-431C-A151-4BD141930CDC} = {B161D6A1-F0AE-431C-A151-4BD141930CDC}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_motion_control", "test_motion_control\test_motion_control.vcxproj", "{0495B933-D6D4-4268-A416-F6DAD643ED4F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -142,6 +144,10 @@ Global
 		{689F57B2-DE21-4E3C-8C2C-BE98A29B80EB}.Debug|x64.Build.0 = Debug|x64
 		{689F57B2-DE21-4E3C-8C2C-BE98A29B80EB}.Release|x64.ActiveCfg = Release|x64
 		{689F57B2-DE21-4E3C-8C2C-BE98A29B80EB}.Release|x64.Build.0 = Release|x64
+		{0495B933-D6D4-4268-A416-F6DAD643ED4F}.Debug|x64.ActiveCfg = Debug|x64
+		{0495B933-D6D4-4268-A416-F6DAD643ED4F}.Debug|x64.Build.0 = Debug|x64
+		{0495B933-D6D4-4268-A416-F6DAD643ED4F}.Release|x64.ActiveCfg = Release|x64
+		{0495B933-D6D4-4268-A416-F6DAD643ED4F}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -195,7 +195,7 @@ void camera_parameter_widget::initialize()
         connect(m_run_trigger, &QPushButton::clicked, this, &camera_parameter_widget::on_trigger_once);
         control_layout->addRow("", m_run_trigger);
 
-        QGroupBox* control_group = new QGroupBox("相机控制", this);
+        QGroupBox* control_group = new QGroupBox("相机控制");
         control_group->setLayout(control_layout);
         layout->addWidget(control_group);
     }

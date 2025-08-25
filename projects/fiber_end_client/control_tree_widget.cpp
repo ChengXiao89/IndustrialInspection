@@ -18,12 +18,17 @@ void control_tree_widget::initialize()
 {
 	setHeaderHidden(true);
 	m_root_item = new QTreeWidgetItem(this);
-	m_root_item->setText(0, QString::fromStdString("参数控制"));
+	m_root_item->setText(0, QString::fromStdString("操作入口"));
+
 	m_camera_parameter_item = new QTreeWidgetItem(m_root_item);
-	m_camera_parameter_item->setText(0, QString::fromStdString("相机控制"));
+	m_camera_parameter_item->setText(0, QString::fromStdString("相机参数设置"));
 	m_algorithm_parameter_item = new QTreeWidgetItem(m_root_item);
-	m_algorithm_parameter_item->setText(0, QString::fromStdString("算法参数"));
+	m_algorithm_parameter_item->setText(0, QString::fromStdString("算法参数设置"));
+	m_main_operate_parameter_item = new QTreeWidgetItem(m_root_item);
+	m_main_operate_parameter_item->setText(0, QString::fromStdString("端面检测"));
+
 	m_root_item->setExpanded(true);
+
 
 	//注册消息
 	connect(this, &QTreeWidget::itemClicked, this, &control_tree_widget::on_item_clicked);
@@ -45,6 +50,10 @@ void control_tree_widget::on_item_clicked(QTreeWidgetItem* item, int column)
 		stacked_widget->setCurrentIndex(0);
 	}
 	else if (item == m_algorithm_parameter_item)
+	{
+		stacked_widget->setCurrentIndex(1);
+	}
+	else if (item == m_main_operate_parameter_item)
 	{
 		stacked_widget->setCurrentIndex(1);
 	}

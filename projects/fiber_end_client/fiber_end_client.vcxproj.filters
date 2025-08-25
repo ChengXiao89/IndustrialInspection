@@ -73,6 +73,9 @@
     <ClCompile Include="central_thumbnail_bar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="control_fiber_end_pane.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="client.h">
@@ -106,6 +109,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="central_widget.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="control_fiber_end_pane.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

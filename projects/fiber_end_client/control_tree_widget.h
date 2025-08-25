@@ -20,4 +20,5 @@ private:
 	QTreeWidgetItem* m_root_item{ nullptr };
 	QTreeWidgetItem* m_camera_parameter_item{ nullptr };
 	QTreeWidgetItem* m_algorithm_parameter_item{ nullptr };
+	QTreeWidgetItem* m_main_operate_parameter_item{ nullptr };
 };

@@ -17,6 +17,9 @@ void control_stacked_widget::initialize()
 	m_camera_parameter_widget = new camera_parameter_widget(this);
 	m_camera_parameter_widget->initialize();
 	addWidget(m_camera_parameter_widget);
+	m_control_fiber_end_pane = new control_fiber_end_pane(this);
+	m_control_fiber_end_pane->initialize();
+	addWidget(m_control_fiber_end_pane);
 	setCurrentIndex(0);
 }
 

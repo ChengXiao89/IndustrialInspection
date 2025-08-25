@@ -60,7 +60,7 @@ void main_window::initialize_control_pane()
 {
 	m_control_pane = new control_pane_dock_widget(&m_client, this);
 	m_control_pane->initialize();
-	m_control_pane->setMaximumWidth(360);
+	m_control_pane->setMaximumWidth(540);
 	//注册消息
 	connect(m_control_pane, &control_pane_dock_widget::post_camera_trigger_once_success, this, &main_window::on_camera_trigger_once_success);
 	addDockWidget(Qt::RightDockWidgetArea, m_control_pane);

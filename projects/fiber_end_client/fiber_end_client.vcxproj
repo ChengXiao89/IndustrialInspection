@@ -118,6 +118,7 @@
     <ClCompile Include="central_widget.cpp" />
     <ClCompile Include="client.cpp" />
     <ClCompile Include="control_camera_parameter_widget.cpp" />
+    <ClCompile Include="control_fiber_end_pane.cpp" />
     <ClCompile Include="control_pane_dock_widget.cpp" />
     <ClCompile Include="control_stacked_widget.cpp" />
     <ClCompile Include="control_tree_widget.cpp" />
@@ -145,6 +146,7 @@
     <QtMoc Include="control_stacked_widget.h" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="control_fiber_end_pane.h" />
     <QtMoc Include="central_image_viewer.h" />
     <QtMoc Include="central_status_table.h" />
     <QtMoc Include="central_thumbnail_bar.h" />

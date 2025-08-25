@@ -37,12 +37,12 @@
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
     <QtInstall>6.8.2_msvc2022_64</QtInstall>
-    <QtModules>core;gui;network</QtModules>
+    <QtModules>core;gui;network;xml</QtModules>
     <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
     <QtInstall>6.8.2_msvc2022_64</QtInstall>
-    <QtModules>core;gui;network</QtModules>
+    <QtModules>core;gui;network;xml</QtModules>
     <QtBuildConfig>release</QtBuildConfig>
   </PropertyGroup>
   <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
@@ -72,6 +72,9 @@
       <AdditionalLibraryDirectories>..\..\lib\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>common.lib;device_enum.lib;device_camera.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ClCompile>
+      <AdditionalIncludeDirectories>../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Link>
@@ -109,6 +112,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="motion_control.cpp" />
     <ClCompile Include="server.cpp" />
     <ClCompile Include="thread_algorithm.cpp" />
     <ClCompile Include="thread_device_enum.cpp" />
@@ -123,7 +127,9 @@
     <QtMoc Include="work_threads.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="config.hpp" />
     <ClInclude Include="device_manager.hpp" />
+    <ClInclude Include="motion_control.h" />
     <ClInclude Include="thread_algorithm.h" />
     <QtMoc Include="thread_device_enum.h" />
     <ClInclude Include="thread_misc.h" />

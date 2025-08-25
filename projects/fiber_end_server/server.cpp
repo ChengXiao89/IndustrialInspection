@@ -31,6 +31,9 @@ bool fiber_end_server::start()
         qWarning() << QString::fromStdString("后端启动失败:") << errorString();
         return false;
     }
+    //加载配置文件
+    load_config_file("./config.xml");         //加载配置文件，如果没有则使用默认值
+
     qDebug() << QString::fromStdString("后端已启动，监听端口:") << m_server_port;
 	m_thread_algorithm->start();
     m_thread_motion_control->start();
@@ -40,6 +43,12 @@ bool fiber_end_server::start()
     //启动线程之后
     return true;
 }
+
+bool fiber_end_server::load_config_file(const std::string& config_file_path)
+{
+    return m_config_data.load_from_file(config_file_path);
+}
+
 
 void fiber_end_server::stop()
 {

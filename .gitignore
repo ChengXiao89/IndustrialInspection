@@ -3,3 +3,6 @@ bin
 lib
 projects/event_bus
 temp
+/bin/Debug
+/bin/Debug
+/bin/Debug

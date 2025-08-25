@@ -6,6 +6,7 @@
 #include "thread_motion_control.h"
 #include "thread_device_enum.h"
 #include "thread_misc.h"
+#include "config.hpp"
 
 class fiber_end_server : public QTcpServer
 {
@@ -15,6 +16,8 @@ public:
     void set_server_config(const QString& ip, quint16 port);
 	bool start();
     void stop();
+
+    bool load_config_file(const std::string& config_file_path);         //加载配置文件，如果没有则使用默认值
 	
 	void process_request(const QJsonObject& obj);                       //处理外部请求
     void send_process_result(const QVariant& result_data);              //向客户端发送消息
@@ -38,6 +41,7 @@ private:
     QList<QTcpSocket*> m_clients;                               //连接的客户端
 	QMap<QString, QTcpSocket*> m_map_request_id_to_socket;      //请求 id 和对应的客户端socket映射，在连接多个客户端时确保不会回复错误
 	device_manager m_device_manager;                            //设备管理器，用于存储和管理设备信息
+    st_config_data m_config_data;
 	thread_algorithm* m_thread_algorithm{ nullptr };            //四个子线程，分别处理四类任务
     thread_motion_control* m_thread_motion_control{ nullptr };  
     thread_device_enum* m_thread_device_enum{ nullptr };

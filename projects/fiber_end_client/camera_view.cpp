@@ -400,7 +400,7 @@ void camera_view_dock_widget::on_update_camera_status(const QVariant& data)
 	//1.更新相机列表
 	m_camera_tree_widget->update_camera_list(obj);
 
-    QJsonObject camera_obj = obj["param"].toObject();
+    QJsonObject camera_obj = obj["camera"].toObject();
     if(camera_obj.contains(QString("unique_id")))
     {
         //2.更新相机状态图标

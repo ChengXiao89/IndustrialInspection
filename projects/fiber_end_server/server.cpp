@@ -33,7 +33,6 @@ bool fiber_end_server::start()
     }
     //加载配置文件
     load_config_file("./config.xml");         //加载配置文件，如果没有则使用默认值
-
     qDebug() << QString::fromStdString("后端已启动，监听端口:") << m_server_port;
 	m_thread_algorithm->start();
     m_thread_motion_control->start();
@@ -109,7 +108,7 @@ void fiber_end_server::process_request(const QJsonObject& obj)
 {
     QString command = obj["command"].toString();
     qDebug() << QString::fromStdString("收到消息:") << command;
-    if (command == "client_request_server_camera")
+    if (command == "client_request_server_parameter")
     {
         m_thread_device_enum->add_task(obj);
     }
@@ -169,6 +168,11 @@ int fiber_end_server::get_task_type(const QJsonObject& obj)
     return TASK_TYPE_ANY; //默认返回任意任务类型
 }
 
+QJsonObject fiber_end_server::server_parameter_to_json(const st_config_data& config_data)
+{
+    return config_data.save_to_json();
+}
+
 void fiber_end_server::on_algorithm_task_finished(const QVariant& task_data)
 {
 	
@@ -178,29 +182,31 @@ void fiber_end_server::on_device_enum_task_finished(const QVariant& task_data)
 {
 	QJsonObject obj = task_data.toJsonObject();
     /*********************************
-	 * 枚举线程在执行 client_request_server_camera 任务的时候返回的结果为
-	 * obj["command"] = "client_request_server_camera";
+	 * 枚举线程在执行 client_request_server_parameter 任务的时候返回的结果为
+	 * obj["command"] = "client_request_server_parameter";
 	 * obj["device_list"] = devices_array;  //设备列表
 	 * obj["request_id"]    //原始请求 ID，不需要改变
-	 * 这里再追加一个["param"]字段，将打开的相机信息传递给前端
+	 * 这里再追加一个["camera"]和["parameter"]字段，将打开的相机信息和服务器的端面检测参数传递给前端
      *********************************/
-    if(obj["command"].toString() == QString("client_request_server_camera"))
+    if(obj["command"].toString() == QString("client_request_server_parameter"))
     {
-        // 修改命令为 server_camera_status. 客户端接收到该消息后，需要:
+        // 修改命令为 server_camera_parameter. 客户端接收到该消息后，需要:
 		// （1）初始化相机列表
 		// （2）更新相机视图图标
 		// （3）打开控制面板，显示参数以及更新控件状态
-		obj["command"] = "server_camera_status";
+        //  (4) 更新控制面板的端面检测界面参数
+		obj["command"] = "server_camera_parameter";
 	    if(m_thread_misc->camera() != nullptr && m_thread_misc->camera()->m_is_opened)
         {
             QJsonObject camera_obj = thread_misc::camera_parameter_to_json(m_thread_misc->camera());
-            obj["param"] = camera_obj; // 将相机参数添加到返回结果中
+            obj["camera"] = camera_obj; // 将相机参数添加到返回结果中
         }
         else
         {
-            obj["param"] = QJsonObject(); // 如果没有打开相机，则返回空对象
+            obj["camera"] = QJsonObject(); // 如果没有打开相机，则返回空对象
         }
-		send_process_result(QVariant::fromValue(obj));   // 将任务结果发送给客户端
+        obj["parameter"] = m_config_data.save_to_json(); // 将端面检测参数添加到返回结果中
+		send_process_result(QVariant::fromValue(obj));           // 将任务结果发送给客户端
     }
     else
     {
@@ -211,9 +217,17 @@ void fiber_end_server::on_device_enum_task_finished(const QVariant& task_data)
 
 void fiber_end_server::on_misc_task_finished(const QVariant& task_data)
 {
-    send_process_result(task_data);                 // 将任务结果发送给客户端
+    QJsonObject obj = task_data.toJsonObject();
+    if (obj["command"].toString() == QString("server_camera_opened_success"))
+    {
+        obj["parameter"] = m_config_data.save_to_json(); // 将端面检测参数添加到返回结果中
+        send_process_result(QVariant::fromValue(obj));
+    }
+    else
+    {
+        send_process_result(task_data);                 // 将任务结果发送给客户端
+    }
     /**********************如果是采图任务，需要重置状态***************************/
-	QJsonObject obj = task_data.toJsonObject();
     if(get_task_type(obj) == TASK_TYPE_TRIGGER_ONCE)
     {
         m_is_capturing.store(false); // 触发采图完成后，重置采图状态

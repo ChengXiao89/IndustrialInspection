@@ -27,14 +27,14 @@ void thread_device_enum::process_task(const QVariant& task_data)
         result_obj["request_id"] = obj["request_id"];
 		emit post_task_finished(QVariant::fromValue(result_obj));
     }
-    else if(command == "client_request_server_camera")
+    else if(command == "client_request_server_parameter")
     {
         interface_device_enum* device_enum = device_enum_factory::create_device_enum(m_device_manager->sdk_type());
         std::vector<st_device_info*> device_info_list = device_enum->enumerate_devices();   //枚举的设备信息由m_device_manager管理
         m_device_manager->set_device_list(device_info_list);                                // 更新设备管理器中的设备列表
         // 转换成 QJsonObject 对象，然后发送给前端
         QJsonObject result_obj = device_list_to_json(device_info_list);
-        result_obj["command"] = "client_request_server_camera";     //枚举之后需要继续检查相机状态，这里不修改命令
+        result_obj["command"] = command;                    //枚举之后需要继续检查相机状态，这里不修改命令
         result_obj["request_id"] = obj["request_id"];
         emit post_task_finished(QVariant::fromValue(result_obj));
     }

@@ -4,6 +4,8 @@
 #include <QBoxLayout>
 #include <QGroupBox>
 #include <QFormLayout>
+#include <QJsonObject>
+#include <QJsonArray>
 
 control_fiber_end_pane::control_fiber_end_pane(QWidget* parent):
 	QWidget(parent)
@@ -26,6 +28,24 @@ void control_fiber_end_pane::initialize()
         QFormLayout* formLayout = new QFormLayout();
         formLayout->setVerticalSpacing(5);
         formLayout->setHorizontalSpacing(10);
+        //光源亮度
+        {
+            QHBoxLayout* h_layout = new QHBoxLayout();
+            QLabel* label_light_brightness = new QLabel("光源亮度:");
+            m_edit_light_brightness = new QLineEdit(this);
+            h_layout->addWidget(label_light_brightness);
+            h_layout->addWidget(m_edit_light_brightness);
+            formLayout->addRow(h_layout);
+        }
+        //运动速度
+        {
+            QHBoxLayout* h_layout = new QHBoxLayout();
+            QLabel* label_move_speed = new QLabel("运动速度:");
+            m_edit_move_speed = new QLineEdit(this);
+            h_layout->addWidget(label_move_speed);
+            h_layout->addWidget(m_edit_move_speed);
+            formLayout->addRow(h_layout);
+        }
 
         // 设备位置
         {
@@ -55,13 +75,13 @@ void control_fiber_end_pane::initialize()
         {
             QHBoxLayout* h_layout = new QHBoxLayout();
             QLabel* label_step_x = new QLabel("移动步长(X):");
-            m_edit_step_x = new QLineEdit(this);
+            m_edit_move_step_x = new QLineEdit(this);
             QLabel* label_step_y = new QLabel("移动步长(Y):");
-            m_edit_step_y = new QLineEdit();
+            m_edit_move_step_y = new QLineEdit();
             h_layout->addWidget(label_step_x);
-            h_layout->addWidget(m_edit_step_x);
+            h_layout->addWidget(m_edit_move_step_x);
             h_layout->addWidget(label_step_y);
-            h_layout->addWidget(m_edit_step_y);
+            h_layout->addWidget(m_edit_move_step_y);
             formLayout->addRow(h_layout);
         }
         //上下左右按钮
@@ -199,6 +219,41 @@ void control_fiber_end_pane::initialize()
         main_layout->addWidget(run_group);
     }
     main_layout->addStretch(); // 添加弹性空间
+}
+
+void control_fiber_end_pane::update_parameter(const QJsonObject& obj)
+{
+    QJsonObject root = obj["parameter"].toObject();
+    m_light_brightness = root["light_brightness"].toInt();
+    m_edit_light_brightness->setText(QString("%1").arg(m_light_brightness));
+    m_move_peed = root["move_speed"].toInt();
+    m_edit_move_speed->setText(QString("%1").arg(m_move_peed));
+    m_move_step_x = root["move_step_x"].toInt();
+    m_edit_move_step_x->setText(QString("%1").arg(m_move_step_x));
+    m_move_step_y = root["move_step_y"].toInt();
+    m_edit_move_step_y->setText(QString("%1").arg(m_move_step_y));
+
+    QJsonArray posArray = root["position_list"].toArray();
+    for (int i = 0; i < posArray.size(); i++)
+    {
+        int value = posArray[i].toInt();
+        m_position_list->addItem(QString("%1").arg(value));
+    }
+
+    m_fiber_end_count = root["fiber_end_count"].toInt();
+    m_edit_fiber_count->setText(QString("%1").arg(m_fiber_end_count));
+
+    m_auto_detect = root["auto_detect"].toInt();
+    if(m_auto_detect == 0)
+    {
+        m_check_auto_detect->setCheckState(Qt::Unchecked);
+    }
+    else
+    {
+        m_check_auto_detect->setCheckState(Qt::Checked);
+    }
+    m_edit_image_save_path->setText(root["save_path"].toString());
+    
 }
 
 QPushButton* control_fiber_end_pane::create_push_button(const QSize& button_size, const QIcon& icon)

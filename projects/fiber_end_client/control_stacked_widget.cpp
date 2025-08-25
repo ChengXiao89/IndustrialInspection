@@ -25,12 +25,13 @@ void control_stacked_widget::initialize()
 
 void control_stacked_widget::update_camera_parameter(const QJsonObject& obj)
 {
-	m_camera_parameter_widget->update_camera_parameter(obj);
+	m_camera_parameter_widget->update_camera(obj);
+	m_control_fiber_end_pane->update_parameter(obj);
 	setCurrentIndex(0);		// 切换到相机参数页面
 }
 void control_stacked_widget::reset_camera_parameter()
 {
-	m_camera_parameter_widget->reset_camera_parameter();
+	m_camera_parameter_widget->reset_camera();
 }
 
 void control_stacked_widget::update_camera_grab_status(const QJsonObject& obj)

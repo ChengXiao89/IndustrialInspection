@@ -3,3 +3,8 @@ projects/.vs
 /lib/
 projects/event_bus
 temp
+bin/Debug/device_camera.dll
+bin/Debug/device_camera.dll
+bin/Debug/device_camera.dll
+/projects/test_motion_control/x64
+/projects/test_camera_sdk/x64

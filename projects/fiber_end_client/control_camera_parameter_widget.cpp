@@ -202,10 +202,10 @@ void camera_parameter_widget::initialize()
     layout->addStretch(); // 添加弹性空间
 }
 
-void camera_parameter_widget::update_camera_parameter(const QJsonObject& obj)
+void camera_parameter_widget::update_camera(const QJsonObject& obj)
 {
     m_updated_from_code = true;
-	QJsonObject root = obj["param"].toObject();
+	QJsonObject root = obj["camera"].toObject();
     /*******************************参数设置*******************************/
     //帧率
     {
@@ -449,7 +449,7 @@ void camera_parameter_widget::update_camera_parameter(const QJsonObject& obj)
     update_camera_grab_status(is_grab_running);
 }
 
-void camera_parameter_widget::reset_camera_parameter()
+void camera_parameter_widget::reset_camera()
 {
     m_updated_from_code = true;
     // 采集帧率

@@ -77,7 +77,7 @@ void fiber_end_client::onConnected()
 {
     qDebug() << QString::fromStdString("已连接到后端 ") << m_server_ip << ":" << m_server_port;
     QJsonObject obj;
-    obj["command"] = "client_request_server_camera";        
+    obj["command"] = "client_request_server_parameter";        
     obj["param"] = 0;
 	obj["request_id"] = generateUniqueRequestId(); // 生成唯一请求 ID
     m_socket.write(QJsonDocument(obj).toJson(QJsonDocument::Compact));
@@ -101,7 +101,7 @@ void fiber_end_client::send_message(const QJsonObject& obj)
 
 void fiber_end_client::receive_message(const QJsonObject& obj)
 {
-    if (obj["command"].toString() == QString("server_camera_status"))
+    if (obj["command"].toString() == QString("server_camera_parameter"))
     {
         emit post_update_camera_status(QVariant::fromValue(obj));
     }

@@ -58,8 +58,8 @@ void thread_misc::process_task(const QVariant& task_data)
                 else
                 {
                     result_obj["command"] = "server_camera_opened_success";
-                    QJsonObject param_obj = camera_parameter_to_json(m_camera);
-                    result_obj["param"] = param_obj;        // 将相机参数转换为 JSON 对象
+                    QJsonObject camera_obj = camera_parameter_to_json(m_camera);
+                    result_obj["camera"] = camera_obj;        // 将相机参数转换为 JSON 对象
 					result_obj["unique_id"] = unique_id;    // 返回相机的唯一标识符
                     result_obj["request_id"] = obj["request_id"];
                 }

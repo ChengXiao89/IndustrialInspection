@@ -23,6 +23,8 @@ public:
     void send_process_result(const QVariant& result_data);              //向客户端发送消息
 
     static int get_task_type(const QJsonObject& obj);                   //后端执行完毕之后根据任务类型设置状态
+
+    static QJsonObject server_parameter_to_json(const st_config_data& config_data);
 protected:
     void incomingConnection(qintptr socketDescriptor) override;
 
@@ -41,7 +43,7 @@ private:
     QList<QTcpSocket*> m_clients;                               //连接的客户端
 	QMap<QString, QTcpSocket*> m_map_request_id_to_socket;      //请求 id 和对应的客户端socket映射，在连接多个客户端时确保不会回复错误
 	device_manager m_device_manager;                            //设备管理器，用于存储和管理设备信息
-    st_config_data m_config_data;
+    st_config_data m_config_data;                               //端面检测参数
 	thread_algorithm* m_thread_algorithm{ nullptr };            //四个子线程，分别处理四类任务
     thread_motion_control* m_thread_motion_control{ nullptr };  
     thread_device_enum* m_thread_device_enum{ nullptr };

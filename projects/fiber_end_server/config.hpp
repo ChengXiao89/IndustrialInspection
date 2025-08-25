@@ -1,6 +1,6 @@
-/***********************************************
- * ¼ÓÔØ¶ËÃæ¼ì²âÅäÖÃÎÄ¼ş£¬ÒÔÉèÖÃÏà¹Ø²ÎÊı.
- * Ä¿Ç°°üÀ¨ YÖáÎ»ÖÃÁĞ±í£¬Ã¿ÕÅÓ°Ïñ¶ËÃæÊıÁ¿£¬ Ó°Ïñ±£´æÂ·¾¶
+ï»¿/***********************************************
+ * åŠ è½½ç«¯é¢æ£€æµ‹é…ç½®æ–‡ä»¶ï¼Œä»¥è®¾ç½®ç›¸å…³å‚æ•°.
+ * ç›®å‰åŒ…æ‹¬ Yè½´ä½ç½®åˆ—è¡¨ï¼Œæ¯å¼ å½±åƒç«¯é¢æ•°é‡ï¼Œ å½±åƒä¿å­˜è·¯å¾„
  ***********************************************/
 
 #pragma once
@@ -10,17 +10,17 @@
 #include <QFile>
 #include <QTextStream>
 
- // ¶ËÃæ¼ì²âÅäÖÃ²ÎÊı
+ // ç«¯é¢æ£€æµ‹é…ç½®å‚æ•°
 struct st_config_data
 {
-	std::vector<int> m_position_list;					//Y ÖáÉÏµÄÎ»ÖÃÁĞ±í£¬ÒÔYÖá¶Ëµã×÷ÎªÆğµã£¬ÔËĞĞ×´Ì¬ÏÂ£¬»áÒÀ´ÎÔÚ´ËÎ»ÖÃ¶Ô½¹-¼ì²â
-	int m_count{ 4 };									//Ã¿ÕÅÓ°ÏñÉÏµÄ¶ËÃæÊıÁ¿. ×Ô¶¯¶Ô½¹ÒÔ¼°ºóĞø¼ì²âĞèÒªÊ¹ÓÃµÄ²ÎÊı
-	int m_auto_detect{ 1 };								//¶Ô½¹Íê³ÉÖ®ºóÊÇ·ñ×Ô¶¯Ö´ĞĞ¼ì²â 0 -- ·ñ    1 -- ÊÇ
-	std::string m_save_path{ "./saveimages" };		//Ö¸¶¨±£´æÅÄÕÕÍ¼ÏñµÄÂ·¾¶
+	std::vector<int> m_position_list;					//Y è½´ä¸Šçš„ä½ç½®åˆ—è¡¨ï¼Œä»¥Yè½´ç«¯ç‚¹ä½œä¸ºèµ·ç‚¹ï¼Œè¿è¡ŒçŠ¶æ€ä¸‹ï¼Œä¼šä¾æ¬¡åœ¨æ­¤ä½ç½®å¯¹ç„¦-æ£€æµ‹
+	int m_count{ 4 };									//æ¯å¼ å½±åƒä¸Šçš„ç«¯é¢æ•°é‡. è‡ªåŠ¨å¯¹ç„¦ä»¥åŠåç»­æ£€æµ‹éœ€è¦ä½¿ç”¨çš„å‚æ•°
+	int m_auto_detect{ 1 };								//å¯¹ç„¦å®Œæˆä¹‹åæ˜¯å¦è‡ªåŠ¨æ‰§è¡Œæ£€æµ‹ 0 -- å¦    1 -- æ˜¯
+	std::string m_save_path{ "./saveimages" };		//æŒ‡å®šä¿å­˜æ‹ç…§å›¾åƒçš„è·¯å¾„
 
-	std::string m_config_file_path{ "./config.xml" };		//ÅäÖÃÎÄ¼şÂ·¾¶,·şÎñ¸ÕÆô¶¯Ö®ºó»á¼ÓÔØÅäÖÃÎÄ¼ş£¬Ö»ÔÚµ÷ÓÃ load_from_file Ê±³õÊ¼»¯Ò»´Î
+	std::string m_config_file_path{ "./config.xml" };		//é…ç½®æ–‡ä»¶è·¯å¾„,æœåŠ¡åˆšå¯åŠ¨ä¹‹åä¼šåŠ è½½é…ç½®æ–‡ä»¶ï¼Œåªåœ¨è°ƒç”¨ load_from_file æ—¶åˆå§‹åŒ–ä¸€æ¬¡
 
-	//·şÎñ¸ÕÆô¶¯µÄÊ±ºò¼ÓÔØÅäÖÃÎÄ¼ş£¬±£´æÎÄ¼şÂ·¾¶ÒÔ¼°Êı¾İ
+	//æœåŠ¡åˆšå¯åŠ¨çš„æ—¶å€™åŠ è½½é…ç½®æ–‡ä»¶ï¼Œä¿å­˜æ–‡ä»¶è·¯å¾„ä»¥åŠæ•°æ®
 	bool load_from_file(const std::string& config_file_path)
 	{
 		QFile file(QString::fromStdString(config_file_path));
@@ -40,26 +40,26 @@ struct st_config_data
 		m_config_file_path = config_file_path;
 
 		QDomElement root = doc.documentElement();
-		// ¶ÁÈ¡ position_list
+		// è¯»å– position_list
 		QDomNodeList positions_node = root.elementsByTagName("positions");
 		for (int i = 0; i < positions_node.count(); ++i) 
 		{
 			QDomElement elem = positions_node.at(i).toElement();
 			m_position_list.push_back(elem.text().toInt());
 		}
-		// ¶ÁÈ¡ m_count
+		// è¯»å– m_count
 		QDomNode count_node = root.namedItem("count");
 		if (!count_node.isNull()) 
 		{
 			m_count = count_node.toElement().text().toInt();
 		}
-		// ¶ÁÈ¡ m_auto_detect
+		// è¯»å– m_auto_detect
 		QDomNode auto_detect_node = root.namedItem("auto_detect");
 		if (!auto_detect_node.isNull())
 		{
 			m_auto_detect = auto_detect_node.toElement().text().toInt();
 		}
-		// ¶ÁÈ¡ m_save_path
+		// è¯»å– m_save_path
 		QDomNode save_path_node = root.namedItem("save_path");
 		if (!save_path_node.isNull()) 
 		{
@@ -68,7 +68,7 @@ struct st_config_data
 		return true;
 	}
 
-	//½çÃæÉÏĞŞ¸ÄÏà¹ØÅäÖÃÖ®ºó¸üĞÂÊı¾İ£¬È»ºó±£´æµ½ÎÄ¼ş
+	//ç•Œé¢ä¸Šä¿®æ”¹ç›¸å…³é…ç½®ä¹‹åæ›´æ–°æ•°æ®ï¼Œç„¶åä¿å­˜åˆ°æ–‡ä»¶
 	bool save() const
 	{
 		QFile file(QString::fromStdString(m_config_file_path));
@@ -78,34 +78,34 @@ struct st_config_data
 			return false;
 		}
 		QDomDocument doc;
-		// ´´½¨¸ù½Úµã
+		// åˆ›å»ºæ ¹èŠ‚ç‚¹
 		QDomElement root = doc.createElement("config");
 		doc.appendChild(root);
-		// ±£´æ m_position_list
+		// ä¿å­˜ m_position_list
 		for (int pos : m_position_list) 
 		{
 			QDomElement position_node = doc.createElement("position");
 			position_node.appendChild(doc.createTextNode(QString::number(pos)));
 			root.appendChild(position_node);
 		}
-		// ±£´æ m_count
+		// ä¿å­˜ m_count
 		QDomElement count_node = doc.createElement("count");
 		count_node.appendChild(doc.createTextNode(QString::number(m_count)));
 		root.appendChild(count_node);
 
-		// ±£´æ m_auto_detect
+		// ä¿å­˜ m_auto_detect
 		QDomElement auto_detect_node = doc.createElement("auto_detect");
 		auto_detect_node.appendChild(doc.createTextNode(QString::number(m_auto_detect)));
 		root.appendChild(auto_detect_node);
 
-		// Ìí¼Ó m_save_path
+		// æ·»åŠ  m_save_path
 		QDomElement save_path_node = doc.createElement("save_path");
 		save_path_node.appendChild(doc.createTextNode(QString::fromStdString(m_save_path)));
 		root.appendChild(save_path_node);
 
-		// Ğ´ÈëÎÄ¼ş
+		// å†™å…¥æ–‡ä»¶
 		QTextStream out(&file);
-		doc.save(out, 4);  // ±£´æ¸ñÊ½»¯µÄ XML,µÚ¶ş¸ö²ÎÊı±íÊ¾Ëõ½øµÄ¿Õ¸ñÊı£¬ÓÃÓÚ¿ØÖÆ QDomDocument::save() Êä³ö XML Ê±µÄËõ½ø¸ñÊ½
+		doc.save(out, 4);  // ä¿å­˜æ ¼å¼åŒ–çš„ XML,ç¬¬äºŒä¸ªå‚æ•°è¡¨ç¤ºç¼©è¿›çš„ç©ºæ ¼æ•°ï¼Œç”¨äºæ§åˆ¶ QDomDocument::save() è¾“å‡º XML æ—¶çš„ç¼©è¿›æ ¼å¼
 		file.close();
 
 		return true;

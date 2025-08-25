@@ -1,5 +1,5 @@
 projects/.vs
-bin
-lib
+/bin/
+/lib/
 projects/event_bus
 temp

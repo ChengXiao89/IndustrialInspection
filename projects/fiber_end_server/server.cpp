@@ -31,8 +31,15 @@ bool fiber_end_server::start()
         qWarning() << QString::fromStdString("后端启动失败:") << errorString();
         return false;
     }
-    //加载配置文件
+    //服务器启动时，首先 1.加载配置文件 2.启动运控模块 3.设置光源亮度
     load_config_file("./config.xml");         //加载配置文件，如果没有则使用默认值
+    //启动运控模块
+    if(!m_thread_misc->initialize(&m_config_data))
+    {
+        qWarning() << QString::fromStdString("启动运控模块失败:") << errorString();
+        return false;
+    }
+    
     qDebug() << QString::fromStdString("后端已启动，监听端口:") << m_server_port;
 	m_thread_algorithm->start();
     m_thread_motion_control->start();
@@ -134,11 +141,32 @@ void fiber_end_server::process_request(const QJsonObject& obj)
     }
     else if (command == "client_request_trigger_once")
     {
-        if(m_is_capturing.load())
+        if(m_is_triggering.load())
         {
 			return; // 如果正在采图，则忽略触发请求
         }
-        m_is_capturing.store(true);
+        m_is_triggering.store(true);
+        m_thread_misc->add_task(obj);
+    }
+    else if(command == "client_request_move_camera")
+    {
+        if (m_is_triggering.load())
+        {
+            return; // 如果正在采图，则忽略触发请求
+        }
+        m_is_triggering.store(true);
+        m_thread_misc->add_task(obj);
+    }
+    else if(command == "client_request_set_motion_parameter")
+    {
+        m_thread_misc->add_task(obj);
+    }
+    else if (command == "client_request_auto_focus")
+    {
+        m_thread_misc->add_task(obj);
+    }
+    else if (command == "client_request_calibration")
+    {
         m_thread_misc->add_task(obj);
     }
 }
@@ -228,9 +256,9 @@ void fiber_end_server::on_misc_task_finished(const QVariant& task_data)
         send_process_result(task_data);                 // 将任务结果发送给客户端
     }
     /**********************如果是采图任务，需要重置状态***************************/
-    if(get_task_type(obj) == TASK_TYPE_TRIGGER_ONCE)
+    if(get_task_type(obj) == TASK_TYPE_TRIGGER_ONCE || get_task_type(obj) == TASK_TYPE_MOVE_CAMERA)
     {
-        m_is_capturing.store(false); // 触发采图完成后，重置采图状态
+        m_is_triggering.store(false); // 触发采图完成后，重置采图状态
     }
 }
 

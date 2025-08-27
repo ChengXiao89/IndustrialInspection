@@ -4,9 +4,6 @@
 #include <QBuffer>
 #include <QImage>
 
-
-
-
 thread_misc::thread_misc(QString name, QObject* parent)
     :thread_base(name, parent)
 {
@@ -21,6 +18,36 @@ thread_misc::~thread_misc()
 		delete m_camera;        // 确保释放相机资源
 		m_camera = nullptr;     // 避免悬空指针
 	}
+    if(m_motion_control != nullptr)
+    {
+        delete m_motion_control;
+        m_motion_control = nullptr;
+    }
+}
+
+bool thread_misc::initialize(st_config_data* config_data)
+{
+	if(!setup_motion_control(config_data))
+	{
+		return false;
+	}
+    m_auto_focus = new AutoFocus(m_motion_control,m_camera,m_config_data->m_fiber_end_count);
+    
+
+    return true;
+}
+
+bool thread_misc::setup_motion_control(st_config_data* config_data)
+{
+    std::string port = "COM1";  // 串口号
+    unsigned int baud_rate = 115200;
+    m_config_data = config_data;
+    m_motion_control = new motion_control(port, baud_rate);
+    m_motion_control->reset(0);
+    m_motion_control->reset(1);
+    m_motion_control->get_position(m_config_data->m_position_x, m_config_data->m_position_y);
+    m_motion_control->set_light_source_param(m_config_data->m_light_brightness, 80, 1);
+	return true;
 }
 
 void thread_misc::process_task(const QVariant& task_data)
@@ -28,6 +55,7 @@ void thread_misc::process_task(const QVariant& task_data)
     QJsonObject obj = task_data.toJsonObject();
     QString command = obj["command"].toString();
 	QJsonObject result_obj;     //返回的消息对象
+    result_obj["request_id"] = obj["request_id"];
     if (command == "client_request_open_camera")
     {
 		QString unique_id = obj["param"].toString();
@@ -36,7 +64,6 @@ void thread_misc::process_task(const QVariant& task_data)
         {
             result_obj["command"] = "server_report_error";
             result_obj["param"] = QString("未找到相机设备: %1").arg(unique_id);
-            result_obj["request_id"] = obj["request_id"];
 		}
         else
         {
@@ -45,7 +72,6 @@ void thread_misc::process_task(const QVariant& task_data)
             {
                 result_obj["command"] = "server_report_error";
                 result_obj["param"] = QString("无法创建相机设备: %1").arg(unique_id);
-                result_obj["request_id"] = obj["request_id"];
 			}
             else
             {
@@ -53,15 +79,14 @@ void thread_misc::process_task(const QVariant& task_data)
                 {
                     result_obj["command"] = "server_report_error";
                     result_obj["param"] = QString("无法打开相机设备: %1").arg(unique_id);
-                    result_obj["request_id"] = obj["request_id"];
                 }
                 else
                 {
+                    m_auto_focus->set_camera(m_camera);
                     result_obj["command"] = "server_camera_opened_success";
                     QJsonObject camera_obj = camera_parameter_to_json(m_camera);
                     result_obj["camera"] = camera_obj;        // 将相机参数转换为 JSON 对象
 					result_obj["unique_id"] = unique_id;    // 返回相机的唯一标识符
-                    result_obj["request_id"] = obj["request_id"];
                 }
             }
         }
@@ -74,7 +99,6 @@ void thread_misc::process_task(const QVariant& task_data)
             m_camera->close();
         }
         result_obj["command"] = "server_camera_closed_success";
-        result_obj["request_id"] = obj["request_id"];
         emit post_task_finished(QVariant::fromValue(result_obj));
     }
     else if (command == "client_request_change_camera_parameter")
@@ -152,7 +176,6 @@ void thread_misc::process_task(const QVariant& task_data)
             {
                 result_obj["command"] = "server_report_error";
                 result_obj["param"] = QString("设置相机参数失败: %1").arg(m_camera->map_ret_status(ret));
-                result_obj["request_id"] = obj["request_id"];
                 emit post_task_finished(QVariant::fromValue(result_obj));
             }
             else
@@ -160,8 +183,7 @@ void thread_misc::process_task(const QVariant& task_data)
                 // 成功后重新获取相机参数并返回
                 QJsonObject camera_obj = camera_parameter_to_json(m_camera);
                 result_obj["command"] = "server_camera_parameter_changed_success";
-                result_obj["param"] = camera_obj;
-                result_obj["request_id"] = obj["request_id"];
+                result_obj["camera"] = camera_obj;
                 emit post_task_finished(QVariant::fromValue(result_obj));
 			}
         }
@@ -207,32 +229,28 @@ void thread_misc::process_task(const QVariant& task_data)
                 result_obj["command"] = "server_camera_grab_set_success";
                 result_obj["param"] = start;
             }
-            result_obj["request_id"] = obj["request_id"];
-            emit post_task_finished(QVariant::fromValue(result_obj));
         }
         else
         {
             result_obj["command"] = "server_report_error";
             result_obj["param"] = QString("相机对象无效！");
-            result_obj["request_id"] = obj["request_id"];
-            emit post_task_finished(QVariant::fromValue(result_obj));
         }
+        emit post_task_finished(QVariant::fromValue(result_obj));
     }
     else if(command == "client_request_trigger_once")
     {
         result_obj["task_type"] = TASK_TYPE_TRIGGER_ONCE; // 设置任务类型为采集任务
-        if(m_camera != nullptr)
+        if (m_camera != nullptr)
         {
             QImage img = m_camera->trigger_once();
-            if(img.isNull())
+            if (img.isNull())
             {
                 result_obj["command"] = "server_report_error";
                 result_obj["param"] = QString("触发采图失败");
             }
             else
             {
-                //测试保存图片
-                if(0)
+                if (0)      //测试保存图片
                 {
                     img.save("D:/Temp/server.png");
                 }
@@ -246,13 +264,209 @@ void thread_misc::process_task(const QVariant& task_data)
                 {
                     result_obj["command"] = "server_camera_trigger_once_success";
                     QJsonObject json = image_shared_memory::meta_to_json(meta);
-					result_obj["param"] = json;
+                    result_obj["param"] = json;
                 }
             }
-            result_obj["request_id"] = obj["request_id"];
             emit post_task_finished(QVariant::fromValue(result_obj));
         }
 	}
+    else if(command == "client_request_move_camera")
+    {
+        result_obj["task_type"] = TASK_TYPE_MOVE_CAMERA;        //设置任务类型为移动相机任务(需要采图)
+        result_obj["command"] = "server_move_camera_success";   //使用统一回复命令，涉及到移动+取图两个步骤，在result_obj["image"]中存储取图状态
+        QJsonObject param = obj["param"].toObject();
+        int pos_x(0), pos_y(0);
+        if (param["name"] == "move_to_position")
+        {
+            if (m_motion_control != nullptr)
+            {
+                pos_x = param["x"].toInt();
+                pos_y = param["y"].toInt();
+                m_motion_control->move_position(1, pos_y, m_config_data->m_move_speed);
+                m_motion_control->move_position(0, pos_x, m_config_data->m_move_speed);
+                m_motion_control->get_position(pos_x, pos_y);
+            }
+        }
+	    else if (param["name"] == "move_forward_y")
+	    {
+            if(m_motion_control != nullptr)
+            {
+                m_motion_control->move_distance(1, m_config_data->m_move_step_y, m_config_data->m_move_speed);
+                m_motion_control->get_position(pos_x, pos_y);
+            }
+	    }
+        else if (param["name"] == "move_back_x")
+        {
+        	if (m_motion_control != nullptr)
+            {
+                m_motion_control->move_distance(0, -m_config_data->m_move_step_x, m_config_data->m_move_speed);
+                m_motion_control->get_position(pos_x, pos_y);
+            }
+        }
+        else if (param["name"] == "move_forward_x")
+        {
+            if (m_motion_control != nullptr)
+            {
+                m_motion_control->move_distance(0, m_config_data->m_move_step_x, m_config_data->m_move_speed);
+                m_motion_control->get_position(pos_x, pos_y);
+            }
+        }
+        else if (param["name"] == "move_back_y")
+        {
+            if (m_motion_control != nullptr)
+            {
+                m_motion_control->move_distance(1, -m_config_data->m_move_step_y, m_config_data->m_move_speed);
+                m_motion_control->get_position(pos_x, pos_y);
+            }
+        }
+        result_obj["x"] = pos_x;
+        result_obj["y"] = pos_y;
+        //移动相机之后采图
+        if (m_camera != nullptr)
+        {
+            //需要 触发模式+软触发
+            m_camera->set_trigger_mode(global_trigger_mode_once);
+            m_camera->set_trigger_source(global_trigger_source_software);
+            m_camera->start_grab();
+            QImage img = m_camera->trigger_once();
+            if (img.isNull())
+            {
+                result_obj["image"] = "trigger error";
+            }
+            else
+            {
+                st_image_meta meta;
+                if (!m_image_shared_memory.write_image(img, meta))
+                {
+                    result_obj["image"] = "write image error";
+                }
+                else
+                {
+                    result_obj["image"] = "success";
+                    QJsonObject json = image_shared_memory::meta_to_json(meta);
+                    result_obj["image_data"] = json;
+                }
+            }
+            emit post_task_finished(QVariant::fromValue(result_obj));
+        }
+
+    }
+    else if(command == "client_request_set_motion_parameter")
+    {
+        QJsonObject param = obj["param"].toObject();
+        
+    	if(param["name"] == "set_light_brightness")
+        {
+            int light_brightness = param["value"].toInt();
+            bool ret = m_motion_control->set_light_source_param(light_brightness, 80, 1);
+            if(ret)
+            {
+                m_config_data->m_light_brightness = light_brightness;
+                m_config_data->save();
+            }
+            else
+            {
+                result_obj["command"] = "server_report_error";
+                result_obj["param"] = QString("设置光源亮度失败!");
+            }
+        }
+        else if(param["name"] == "set_move_speed")
+        {
+            int move_speed = param["value"].toInt();
+            m_config_data->m_move_speed = move_speed;
+            m_config_data->save();
+        }
+        else if (param["name"] == "set_move_step_x")
+        {
+            int move_step_x = param["value"].toInt();
+            m_config_data->m_move_step_x = move_step_x;
+            m_config_data->save();
+        }
+        else if (param["name"] == "set_move_step_y")
+        {
+            int move_step_y = param["value"].toInt();
+            m_config_data->m_move_step_y = move_step_y;
+            m_config_data->save();
+        }
+        else if (param["name"] == "set_zero")
+        {
+            bool ret = m_motion_control->set_current_position_zero(0);
+            if(ret)
+            {
+                ret = m_motion_control->set_current_position_zero(1);
+                if (ret)
+                {
+                    m_motion_control->get_position(m_config_data->m_position_x, m_config_data->m_position_y);
+                    result_obj["command"] = "server_set_motion_parameter_success";
+                    result_obj["name"] = param["name"];
+                    result_obj["x"] = m_config_data->m_position_x;
+                    result_obj["y"] = m_config_data->m_position_y;
+                }
+                else
+                {
+                    result_obj["command"] = "server_report_error";
+                    result_obj["param"] = QString("设置零点失败!");
+                }
+            }
+            else
+            {
+                result_obj["command"] = "server_report_error";
+                result_obj["param"] = QString("设置零点失败!");
+            }
+        }
+        else if (param["name"] == "reset_position")
+        {
+            bool ret = m_motion_control->reset(0);
+            if (ret)
+            {
+                ret = m_motion_control->reset(1);
+                if (ret)
+                {
+                    m_motion_control->get_position(m_config_data->m_position_x, m_config_data->m_position_y);
+                    result_obj["command"] = "server_set_motion_parameter_success";
+                    result_obj["name"] = param["name"];
+                    result_obj["x"] = m_config_data->m_position_x;
+                    result_obj["y"] = m_config_data->m_position_y;
+                }
+                else
+                {
+                    result_obj["command"] = "server_report_error";
+                    result_obj["param"] = QString("复位失败!");
+                }
+            }
+            else
+            {
+                result_obj["command"] = "server_report_error";
+                result_obj["param"] = QString("复位失败!");
+            }
+        }
+        emit post_task_finished(QVariant::fromValue(result_obj));
+    }
+    else if(command == "client_request_auto_focus")
+    {
+	    if(m_auto_focus != nullptr)
+	    {
+            std::vector<cv::Mat> images = m_auto_focus->get_focus_images();
+            if(1)
+            {
+	            for (int i = 0; i < images.size();i++)
+	            {
+                    char szPath[256] = { 0 };
+                    sprintf_s(szPath, "C:/Temp/focus_%d.png", i);
+                    //QString file_path = QString("D:/Temp/focus_%1.png").arg(i);
+                    cv::imwrite(szPath,images[i]);
+	            }
+            }
+	    }
+    }
+    else if (command == "client_request_calibration")
+    {
+        if(m_auto_focus != nullptr)
+        {
+            m_auto_focus->calibrate_model();
+            m_auto_focus->save_model("./calibration.bin");
+        }
+    }
 }
 
 QJsonObject thread_misc::camera_parameter_to_json(interface_camera* camera)

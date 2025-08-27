@@ -104,7 +104,8 @@ void main_window::on_camera_opened_success(const QJsonObject& obj)
 {
 	if(m_control_pane != nullptr)
 	{
-		m_control_pane->update_camera_parameter(obj);	//更新控制面板中的相机信息
+		m_control_pane->update_camera_parameter(obj);	//更新相机节目中的参数信息
+		m_control_pane->update_fiber_end_pane_parameter(obj);	//更新端面检测界面中的参数信息
 		m_control_pane->show();							//打开相机后显示控制面板
 	}
 }

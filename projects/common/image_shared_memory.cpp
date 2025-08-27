@@ -18,11 +18,13 @@ bool image_shared_memory::write_image(const QImage& img, st_image_meta& meta)
     int width = img_rgb888.width();
     int height = img_rgb888.height();
 	quint64 data_size = static_cast<quint64>(width * height * 3); // RGB888 每个像素 3 字节
-
+    meta.shared_memory_key = m_shared_memory.key();
     // 需要重建共享内存
     if (!m_shared_memory.isAttached() || width != m_width || height != m_height)
     {
 		meta.is_new_memory = true; // 标记为新创建的共享内存
+        meta.shared_memory_key = QString("shared_image_%1x%2").arg(width).arg(height);
+        m_shared_memory.setKey(meta.shared_memory_key);
         if (m_shared_memory.isAttached())
         {
             m_shared_memory.detach();
@@ -47,7 +49,6 @@ bool image_shared_memory::write_image(const QImage& img, st_image_meta& meta)
 
     // 填元数据
     m_frame_counter++;
-    meta.shared_memory_key = m_shared_memory.key();
     meta.width = width;
     meta.height = height;
     meta.format = QImage::Format_RGB888;
@@ -59,12 +60,13 @@ bool image_shared_memory::write_image(const QImage& img, st_image_meta& meta)
 
 QImage image_shared_memory::read_image(const st_image_meta& meta)
 {
-    if(meta.is_new_memory)
+    if(meta.is_new_memory || meta.shared_memory_key != m_shared_memory.key())
     {
         if (m_shared_memory.isAttached())
         {
             m_shared_memory.detach();
         }
+        m_shared_memory.setKey(meta.shared_memory_key);
         if (!m_shared_memory.attach(QSharedMemory::ReadOnly))
         {
             qDebug() << "Shared memory attach failed:" << m_shared_memory.errorString();
@@ -73,6 +75,7 @@ QImage image_shared_memory::read_image(const st_image_meta& meta)
     }
     else if(!m_shared_memory.isAttached())  //可能是前端重启了，此时后端没有重新创建但前端仍然需要绑定
     {
+        m_shared_memory.setKey(meta.shared_memory_key);
         if (!m_shared_memory.attach(QSharedMemory::ReadOnly))
         {
             qDebug() << "Shared memory attach failed:" << m_shared_memory.errorString();

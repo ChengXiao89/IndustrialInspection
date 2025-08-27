@@ -47,6 +47,9 @@
     <ClCompile Include="motion_control.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="auto_focus.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="server.h">
@@ -76,6 +79,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="config.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="auto_focus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

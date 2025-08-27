@@ -6,6 +6,7 @@
 #include <QFormLayout>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QMessageBox>
 
 control_fiber_end_pane::control_fiber_end_pane(QWidget* parent):
 	QWidget(parent)
@@ -33,6 +34,7 @@ void control_fiber_end_pane::initialize()
             QHBoxLayout* h_layout = new QHBoxLayout();
             QLabel* label_light_brightness = new QLabel("光源亮度:");
             m_edit_light_brightness = new QLineEdit(this);
+            connect(m_edit_light_brightness, &QLineEdit::editingFinished, this, &control_fiber_end_pane::on_light_brightness_changed);
             h_layout->addWidget(label_light_brightness);
             h_layout->addWidget(m_edit_light_brightness);
             formLayout->addRow(h_layout);
@@ -42,11 +44,11 @@ void control_fiber_end_pane::initialize()
             QHBoxLayout* h_layout = new QHBoxLayout();
             QLabel* label_move_speed = new QLabel("运动速度:");
             m_edit_move_speed = new QLineEdit(this);
+            connect(m_edit_move_speed, &QLineEdit::editingFinished, this, &control_fiber_end_pane::on_move_speed_changed);
             h_layout->addWidget(label_move_speed);
             h_layout->addWidget(m_edit_move_speed);
             formLayout->addRow(h_layout);
         }
-
         // 设备位置
         {
             QHBoxLayout* h_layout = new QHBoxLayout();
@@ -60,15 +62,18 @@ void control_fiber_end_pane::initialize()
             h_layout->addWidget(m_edit_position_y);
             formLayout->addRow(h_layout);
         }
-    	//移动到指定位置以及设置为零点
+    	//移动到指定位置、设置为零点以及相机复位
         {
             QHBoxLayout* h_layout = new QHBoxLayout();
             m_push_button_move_to_position = new QPushButton("移动到相机位置");
             connect(m_push_button_move_to_position, &QPushButton::clicked, this, &control_fiber_end_pane::on_move_to_position);
             m_push_button_set_position_zero = new QPushButton("相机位置设为零点");
             connect(m_push_button_set_position_zero, &QPushButton::clicked, this, &control_fiber_end_pane::on_set_current_position_zero);
+            m_push_button_reset_position = new QPushButton("相机复位");
+            connect(m_push_button_reset_position, &QPushButton::clicked, this, &control_fiber_end_pane::on_reset_position);
             h_layout->addWidget(m_push_button_move_to_position);
             h_layout->addWidget(m_push_button_set_position_zero);
+            h_layout->addWidget(m_push_button_reset_position);
             formLayout->addRow(h_layout);
         }
         //横向移动距离与纵向移动距离
@@ -76,8 +81,10 @@ void control_fiber_end_pane::initialize()
             QHBoxLayout* h_layout = new QHBoxLayout();
             QLabel* label_step_x = new QLabel("移动步长(X):");
             m_edit_move_step_x = new QLineEdit(this);
+            connect(m_edit_move_step_x, &QLineEdit::editingFinished, this, &control_fiber_end_pane::on_move_step_x_changed);
             QLabel* label_step_y = new QLabel("移动步长(Y):");
             m_edit_move_step_y = new QLineEdit();
+            connect(m_edit_move_step_y, &QLineEdit::editingFinished, this, &control_fiber_end_pane::on_move_step_y_changed);
             h_layout->addWidget(label_step_x);
             h_layout->addWidget(m_edit_move_step_x);
             h_layout->addWidget(label_step_y);
@@ -107,16 +114,13 @@ void control_fiber_end_pane::initialize()
             m_push_button_move_back_x = create_push_button(button_size, icon_left);
             connect(m_push_button_move_back_x, &QPushButton::clicked, this, &control_fiber_end_pane::on_move_back_x);
             h_layout_2->addWidget(m_push_button_move_back_x);
-
             h_layout_2->addSpacing(button_size.width());  // 中间留白
-
             QIcon icon_right("./icons/move_right.png");
             m_push_button_move_forward_x = create_push_button(button_size, icon_right);
             connect(m_push_button_move_forward_x, &QPushButton::clicked, this, &control_fiber_end_pane::on_move_forward_x);
             h_layout_2->addWidget(m_push_button_move_forward_x);
             h_layout_2->addStretch();
             layout->addLayout(h_layout_2);
-
             // 第三行: 向下的按钮,居中
             QHBoxLayout* h_layout_3 = new QHBoxLayout();
             h_layout_3->addStretch();
@@ -126,12 +130,14 @@ void control_fiber_end_pane::initialize()
             h_layout_3->addWidget(m_push_button_move_back_y);
             h_layout_3->addStretch();
             layout->addLayout(h_layout_3);
-
             formLayout->addRow(layout);
         }
         //自动对焦按钮
         {
             QHBoxLayout* h_layout = new QHBoxLayout();
+            m_push_button_calibration = new QPushButton("清晰度标定");
+            connect(m_push_button_calibration, &QPushButton::clicked, this, &control_fiber_end_pane::on_calibration);
+            h_layout->addWidget(m_push_button_calibration);
             m_push_button_auto_focus = new QPushButton("自动对焦");
             connect(m_push_button_auto_focus, &QPushButton::clicked, this, &control_fiber_end_pane::on_auto_focus);
             h_layout->addWidget(m_push_button_auto_focus);
@@ -141,25 +147,20 @@ void control_fiber_end_pane::initialize()
         motion_control_group->setLayout(formLayout);
         main_layout->addWidget(motion_control_group);
     }
-
     //参数设置
     {
         QFormLayout* formLayout = new QFormLayout();
         formLayout->setVerticalSpacing(5);
         formLayout->setHorizontalSpacing(10);
-
         // Y 轴位置列表
         {
             m_position_list = new QListWidget();
             m_position_list->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked);
-            
             // 插入第一行作为标题
             QListWidgetItem* item = new QListWidgetItem("Y 轴位置列表");
             item->setFlags(item->flags() & ~Qt::ItemIsEditable);  // 去掉可编辑属性
             m_position_list->addItem(item);
-
             formLayout->addRow(m_position_list);
-
             // 按钮
             QHBoxLayout* h_layout = new QHBoxLayout();
             m_push_button_add_position = new QPushButton("添加");
@@ -228,6 +229,10 @@ void control_fiber_end_pane::update_parameter(const QJsonObject& obj)
     m_edit_light_brightness->setText(QString("%1").arg(m_light_brightness));
     m_move_peed = root["move_speed"].toInt();
     m_edit_move_speed->setText(QString("%1").arg(m_move_peed));
+    m_position_x = root["position_x"].toInt();
+    m_edit_position_x->setText(QString("%1").arg(m_position_x));
+    m_position_y = root["position_y"].toInt();
+    m_edit_position_y->setText(QString("%1").arg(m_position_y));
     m_move_step_x = root["move_step_x"].toInt();
     m_edit_move_step_x->setText(QString("%1").arg(m_move_step_x));
     m_move_step_y = root["move_step_y"].toInt();
@@ -256,6 +261,26 @@ void control_fiber_end_pane::update_parameter(const QJsonObject& obj)
     
 }
 
+void control_fiber_end_pane::on_motion_parameter_changed_success(const QJsonObject& obj)
+{
+    QString name = obj["name"].toString();
+    if(name == "set_zero" || name == "reset_position")      //设置零点或者复位，都需要更新界面上的位置信息
+    {
+        m_position_x = obj["x"].toInt();
+        m_edit_position_x->setText(QString("%1").arg(m_position_x));
+        m_position_y = obj["y"].toInt();
+        m_edit_position_y->setText(QString("%1").arg(m_position_y));
+    }
+}
+
+void control_fiber_end_pane::update_motion_position(int pos_x, int pos_y)
+{
+    m_position_x = pos_x;
+    m_edit_position_x->setText(QString("%1").arg(m_position_x));
+    m_position_y = pos_y;
+    m_edit_position_y->setText(QString("%1").arg(m_position_y));
+}
+
 QPushButton* control_fiber_end_pane::create_push_button(const QSize& button_size, const QIcon& icon)
 {
     QPushButton* button = new QPushButton();
@@ -265,39 +290,152 @@ QPushButton* control_fiber_end_pane::create_push_button(const QSize& button_size
     return button;
 }
 
-void control_fiber_end_pane::on_move_to_position()
+void control_fiber_end_pane::on_light_brightness_changed()
 {
-	
+    int brightness = m_edit_light_brightness->text().toInt();
+    if(brightness <= 0)
+    {
+        QMessageBox::information(this, QString::fromStdString("提示"), QString::fromStdString("光源亮度必须为大于0的整数!"), QMessageBox::Ok);
+        return;
+    }
+    if (m_light_brightness == brightness)
+    {
+        return;
+    }
+    m_light_brightness = brightness;
+    QJsonObject obj;
+    obj["name"] = QString("set_light_brightness");
+    obj["value"] = m_light_brightness;
+    emit post_set_motion_parameter(obj);
+}
+
+void control_fiber_end_pane::on_move_speed_changed()
+{
+    int move_speed = m_edit_move_speed->text().toInt();
+    if (move_speed <= 0)
+    {
+        QMessageBox::information(this, QString::fromStdString("提示"), QString::fromStdString("运动速度必须为大于0的整数!"), QMessageBox::Ok);
+        return;
+    }
+    if (m_move_peed == move_speed)
+    {
+        return;
+    }
+    m_move_peed = move_speed;
+    QJsonObject obj;
+    obj["name"] = QString("set_move_speed");
+    obj["value"] = m_move_peed;
+    emit post_set_motion_parameter(obj);
+}
+
+void control_fiber_end_pane::on_move_step_x_changed()
+{
+    int move_step_x = m_edit_move_step_x->text().toInt();
+    if (move_step_x <= 0)
+    {
+        QMessageBox::information(this, QString::fromStdString("提示"), QString::fromStdString("运动步长必须为大于0的整数!"), QMessageBox::Ok);
+        return;
+    }
+    if (m_move_step_x == move_step_x)
+    {
+        return;
+    }
+    m_move_step_x = move_step_x;
+    QJsonObject obj;
+    obj["name"] = QString("set_move_step_x");
+    obj["value"] = m_move_step_x;
+    emit post_set_motion_parameter(obj);
+}
+
+void control_fiber_end_pane::on_move_step_y_changed()
+{
+    int move_step_y = m_edit_move_step_y->text().toInt();
+    if (move_step_y <= 0)
+    {
+        QMessageBox::information(this, QString::fromStdString("提示"), QString::fromStdString("运动步长必须为大于0的整数!"), QMessageBox::Ok);
+        return;
+    }
+    if (m_move_step_y == move_step_y)
+    {
+        return;
+    }
+    m_move_step_y = move_step_y;
+    QJsonObject obj;
+    obj["name"] = QString("set_move_step_y");
+    obj["value"] = m_move_step_y;
+    emit post_set_motion_parameter(obj);
 }
 
 void control_fiber_end_pane::on_set_current_position_zero()
 {
-	
+    QJsonObject obj;
+    obj["name"] = QString("set_zero");
+    emit post_set_motion_parameter(obj);
 }
+
+void control_fiber_end_pane::on_reset_position()
+{
+    QJsonObject obj;
+    obj["name"] = QString("reset_position");
+    emit post_set_motion_parameter(obj);
+}
+
+
+void control_fiber_end_pane::on_move_to_position()
+{
+	//检查编辑框位置是否与当前位置是否相同
+    int pos_x = m_edit_position_x->text().toInt();
+    int pos_y = m_edit_position_y->text().toInt();
+    if(m_position_x == pos_x && m_position_y == pos_y)
+    {
+	    return;
+    }
+    m_position_x = pos_x;
+    m_position_y = pos_y;
+    QJsonObject obj;
+    obj["name"] = QString("move_to_position");
+    obj["x"] = m_position_x;
+    obj["y"] = m_position_y;
+    emit post_move_camera(obj);
+}
+
 
 void control_fiber_end_pane::on_move_forward_y()
 {
-	
+    QJsonObject obj;
+    obj["name"] = QString("move_forward_y");
+    emit post_move_camera(obj);
 }
 
 void control_fiber_end_pane::on_move_back_x()
 {
-	
+    QJsonObject obj;
+    obj["name"] = QString("move_back_x");
+    emit post_move_camera(obj);
 }
 
 void control_fiber_end_pane::on_move_forward_x()
 {
-	
+    QJsonObject obj;
+    obj["name"] = QString("move_forward_x");
+    emit post_move_camera(obj);
 }
 
 void control_fiber_end_pane::on_move_back_y()
 {
-	
+    QJsonObject obj;
+    obj["name"] = QString("move_back_y");
+    emit post_move_camera(obj);
 }
 
 void control_fiber_end_pane::on_auto_focus()
 {
-	
+    emit post_auto_focus();
+}
+
+void control_fiber_end_pane::on_calibration()
+{
+    emit post_calibration();
 }
 
 void control_fiber_end_pane::on_add_y_position()

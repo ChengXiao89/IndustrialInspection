@@ -50,6 +50,6 @@ private:
     thread_misc* m_thread_misc{ nullptr };
     interface_camera* m_camera{ nullptr };			            //相机对象
     /***************************线程执行状态变量，防止命令冲突*************************/
-    std::atomic_bool m_is_capturing{ false };       //后端线程是否正在采图
+    std::atomic_bool m_is_triggering{ false };       //后端线程是否正在采图
 
 };

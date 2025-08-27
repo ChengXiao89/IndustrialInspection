@@ -18,16 +18,26 @@ public:
 	void update_camera_parameter(const QJsonObject& obj);	// 更新相机参数
 	void reset_camera_parameter();							// 重置相机参数
 
+	void update_fiber_end_pane_parameter(const QJsonObject& obj);	//更新端面检测界面参数
+
 private slots:
 	/*******************接收子控件消息*********************/
 	void on_request_trigger_once();								//子控件发送的触发一次采图请求
-	void on_request_change_parameter(const QJsonObject& obj);	//子控件发送的修改参数请求
+	void on_request_change_camera_parameter(const QJsonObject& obj);	//子控件发送的修改参数请求
 	void on_request_start_grab(bool start);						//子控件发送的开始/停止采集请求
 
+	void on_request_move_camera(const QJsonObject& obj);			//子控件发送的移动相机请求，包括前后左右移动和移动到指定位置
+	void on_request_set_motion_parameter(const QJsonObject& obj);	//子控件发送的运控参数设置请求，包括设置光源亮度，运动速度，步长和零点
+	void on_request_auto_focus();									//子控件发送的自动对焦请求
+	void on_request_calibration();									//子控件发送的清晰度标定请求
+	
 	/*******************接收后端消息*********************/
 	void on_camera_parameter_changed_success(const QVariant& obj);	// 接收后端的相机参数修改成功消息，更新界面
 	void on_camera_grab_set_success(const QVariant& obj);			// 接收后端的采集状态修改成功消息，更新界面
 	void on_camera_trigger_once_success(const QVariant& obj);		// 接收后端的采图成功消息，更新界面
+
+	void on_camera_moved_success(const QVariant& obj);				// 接收后端相机移动成功的消息，更新界面，包括显示影像和更新相机位置
+	void on_motion_parameter_changed_success(const QVariant& obj);	// 接收后端运控参数修改成功的消息，更新界面，包括光源亮度、运动速度、相机位置(置0成功)，移动步长等
 signals:
 	void post_camera_trigger_once_success(QImage img);
 

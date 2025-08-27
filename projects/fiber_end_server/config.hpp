@@ -13,8 +13,10 @@
  // 端面检测配置参数
 struct st_config_data
 {
-	int m_light_brightness{ 8000 };						//光源亮度
+	int m_light_brightness{ 1000000 };					//光源亮度
 	int m_move_speed{ 1000 };							//移动速度
+	int m_position_x{ 0 }, m_position_y{ 0 };			//相机当前位置，这里不会保存到文件，考虑到重启时恢复位置可能会导致设备损坏，这里由设备自行设置
+														//初始化加载文件时该值默认为0, 在启动运动控制模块之后获取设备位置并更新该值
 	int m_move_step_x{ 1000 }, m_move_step_y{ 1000 };	//上下调整时的移动步长
 	std::vector<int> m_position_list;					//Y 轴上的位置列表，以Y轴端点作为起点，运行状态下，会依次在此位置对焦-检测
 	int m_fiber_end_count{ 4 };							//每张影像上的端面数量. 自动对焦以及后续检测需要使用的参数
@@ -160,6 +162,8 @@ struct st_config_data
 		
 		root["light_brightness"] = m_light_brightness;
 		root["move_speed"] = m_move_speed;
+		root["position_x"] = m_position_x;
+		root["position_y"] = m_position_y;
 		root["move_step_x"] = m_move_step_x;
 		root["move_step_y"] = m_move_step_y;
 		QJsonArray positions_array;

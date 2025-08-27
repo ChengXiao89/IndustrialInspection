@@ -20,7 +20,8 @@
 enum TASK_TYPE
 {
 	TASK_TYPE_ANY = 0,                  //任意不需要状态管理的任务
-    TASK_TYPE_TRIGGER_ONCE = 0,          //算法检测任务
+    TASK_TYPE_TRIGGER_ONCE = 1,         //拍照任务
+    TASK_TYPE_MOVE_CAMERA = 2,          //移动相机任务,也会拍照
 };
 
 

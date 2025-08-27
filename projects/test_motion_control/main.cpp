@@ -12,9 +12,14 @@ int main(int argc, char *argv[])
     if (motor.is_opened())
     {
         //motor.move_distance(1, -1000, 1000);
+        int x(0), y(0);
+        motor.get_position(x, y);
+        motor.move_position(1, 1000, 1000);
+        motor.move_position(0, 2000, 1000);
+        
+        motor.get_position(x, y);
 
-        //motor.move_position(1, 0, 1000);
-        motor.reset();
+    	motor.reset();
 
         motor.close();
     }

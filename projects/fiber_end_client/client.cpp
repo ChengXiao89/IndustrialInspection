@@ -129,6 +129,16 @@ void fiber_end_client::receive_message(const QJsonObject& obj)
     {
         emit post_camera_trigger_once_success(QVariant::fromValue(obj));
     }
+    else if (obj["command"].toString() == QString("server_set_motion_parameter_success"))
+    {
+        emit post_motion_parameter_changed_success(QVariant::fromValue(obj));
+    }
+    else if (obj["command"].toString() == QString("server_move_camera_success"))
+    {
+        emit post_move_camera_success(QVariant::fromValue(obj));
+    }
+    
+
     if(obj["command"].toString() == QString("server_report_error"))
     {
         QString error_message = obj["param"].toString();

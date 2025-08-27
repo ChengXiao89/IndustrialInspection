@@ -45,6 +45,19 @@ void motion_control::move_position(int axis, int step, int speed)
     send_command(cmd);
 }
 
+void motion_control::get_position(int& x, int& y)
+{
+    std::string cmd = "GetPosition";
+    std::string ret("");
+    if(send_command(cmd, 10, &ret))
+    {
+        int pos = ret.find_first_of(' ');
+        x = atoi(ret.substr(0, pos).c_str());
+        y = atoi(ret.substr(pos+1).c_str());
+    }
+    //std::cout << x << "  " << y << std::endl;
+}
+
 void motion_control::reset()
 {
     move_distance(0, 1000, 5000);       //先向前移动一小段距离
@@ -72,7 +85,7 @@ void motion_control::close()
     }
 }
 
-bool motion_control::send_command(const std::string& cmd, int timeout)
+bool motion_control::send_command(const std::string& cmd, int timeout, std::string* ret_string)
 {
     if (timeout <= 0)
     {
@@ -89,6 +102,10 @@ bool motion_control::send_command(const std::string& cmd, int timeout)
         finish = read_reply(reply,'\n');
         if (finish)
         {
+            if(ret_string != nullptr)
+            {
+                *ret_string = reply;
+            }
             return true;
         }
         // 检查是否超时
@@ -117,6 +134,7 @@ bool motion_control::read_reply(std::string& reply, char finish_ch)
         reply.append(sz_buf, n);
         if (reply.back() == finish_ch)
         {
+            //std::cout << reply << std::endl;
             return true;
         }
     } 

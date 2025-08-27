@@ -24,7 +24,8 @@ protected:
     void initializeGL() override;
 
 private:
-    QImage m_image;       //显示的影像数据指针，只负责显示，不负责内存管理
+    QImage m_image;         //显示的影像数据指针，只负责显示，不负责内存管理
+    double m_x[4], m_y[4];  //影像四个角点在窗口中的位置
     QOpenGLTexture* m_texture{ nullptr };
 
 };

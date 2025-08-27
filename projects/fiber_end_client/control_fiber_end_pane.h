@@ -30,15 +30,24 @@ public:
 	void initialize();
 	QPushButton* create_push_button(const QSize& button_size, const QIcon& icon);		//辅助函数，创建一个按钮并为之设置图标
 
-	void update_parameter(const QJsonObject& obj);
+	void update_parameter(const QJsonObject& obj);		//连接服务器时服务器上存在已经打开的相机，或者在打开相机的时候调用，更新所有参数
+	void on_motion_parameter_changed_success(const QJsonObject& obj);	//向服务器发送请求更改运控参数(光源亮度、运动速度、零点和步长)时响应服务器消息
+	void update_motion_position(int pos_x, int pos_y);					//向服务器发送请求移动相机之后服务器会返回相机位置，在界面上更新显示
 private slots:
+	void on_light_brightness_changed();		//调整光源亮度
+	void on_move_speed_changed();			//调整运动速度
+	void on_move_step_x_changed();			//调整运动步长-X
+	void on_move_step_y_changed();			//调整运动步长-Y
+
 	void on_move_to_position();				//移动到编辑框中指定位置
 	void on_set_current_position_zero();	//将当前位置设为零点
+	void on_reset_position();				//相机复位.将相机移动到负限位并设为零点
 	void on_move_forward_y();				//沿Y轴正向移动指定距离
 	void on_move_back_x();					//沿X轴反向移动指定距离
 	void on_move_forward_x();				//沿X轴正向移动指定距离
 	void on_move_back_y();					//沿Y轴反向移动指定距离
 	void on_auto_focus();					//自动对焦
+	void on_calibration();					//标定清晰度曲线，设备安装完毕之后需要初始化调用一次，或者在曝光时间、增益、影像尺寸变化时需要标定
 	void on_add_y_position();				//添加 Y 轴位置
 	void on_remove_y_position();			//移除 Y 轴位置
 	void on_auto_detect_set_changed(int check_state);	//设置自动检测开关
@@ -46,7 +55,10 @@ private slots:
 	void on_start();
 	void on_stop();
 signals:
-	
+	void post_move_camera(const QJsonObject& obj);				//运动控制，移动相机
+	void post_set_motion_parameter(const QJsonObject& obj);		//运动控制，设置运动参数(速度、步长、光源亮度，设为零点)
+	void post_auto_focus();										//自动对焦
+	void post_calibration();									//清晰度标定
 private:
 	/******************* 运动控制 *******************/
 	int m_light_brightness{ 0 };								// 光源亮度
@@ -58,6 +70,7 @@ private:
 	QLineEdit* m_edit_position_y{ nullptr };
 	QPushButton* m_push_button_move_to_position{ nullptr };		// 移动设备到指定位置
 	QPushButton* m_push_button_set_position_zero{ nullptr };	// 将当前位置设置为零点
+	QPushButton* m_push_button_reset_position{ nullptr };		// 相机复位
 
 	int m_move_step_x{ 0 }, m_move_step_y{ 0 };							// 移动步长
 	QLineEdit* m_edit_move_step_x{ nullptr };						// 设置移动步长
@@ -68,6 +81,7 @@ private:
 	QPushButton* m_push_button_move_back_y{ nullptr };
 
 	QPushButton* m_push_button_auto_focus{ nullptr };		//自动对焦(包含拍照取图功能)
+	QPushButton* m_push_button_calibration{ nullptr };		//标定
 	QPushButton* m_push_button_detect{ nullptr };			//检测功能
 	/******************* 参数设置 *******************/
 	// 显示服务器上的配置参数, 这里支持修改然后更新到服务器

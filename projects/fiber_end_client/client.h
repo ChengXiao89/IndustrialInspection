@@ -34,6 +34,9 @@ signals:
 	void post_camera_grab_set_success(const QVariant& data);            //后端成功设置采集状态
 	void post_camera_trigger_once_success(const QVariant& data);        //后端成功触发采图，返回图像元数据
 
+    void post_motion_parameter_changed_success(const QVariant& data);   //后端成功修改运控参数
+    void post_move_camera_success(const QVariant& data);                //后端成功移动相机位置
+
 	void post_server_error(const QString& error_message);     //后端返回错误信息
 
 private:

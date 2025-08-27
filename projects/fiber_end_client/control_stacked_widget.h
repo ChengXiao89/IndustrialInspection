@@ -15,6 +15,11 @@ public:
 	void update_camera_parameter(const QJsonObject& obj);	//更新相机参数
 	void reset_camera_parameter();							//重置相机参数
 	void update_camera_grab_status(const QJsonObject& obj);	//更新相机采集状态
+
+	void update_fiber_end_pane_parameter(const QJsonObject& obj);	//更新端面检测界面参数
+
+	void on_motion_parameter_changed_success(const QJsonObject& obj);	//更新运动控制参数
+	void update_motion_position(int pos_x, int pos_y);		//在端面检测界面更新相机位置
 private:
 	camera_parameter_widget* m_camera_parameter_widget{ nullptr };
 	control_fiber_end_pane* m_control_fiber_end_pane{ nullptr };

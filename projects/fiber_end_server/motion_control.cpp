@@ -13,7 +13,7 @@ motion_control::motion_control(const std::string& port_name, unsigned int baud_r
         m_serial.set_option(boost::asio::serial_port_base::stop_bits(boost::asio::serial_port_base::stop_bits::one));
         m_serial.set_option(boost::asio::serial_port_base::flow_control(boost::asio::serial_port_base::flow_control::none));
         // 开机亮光
-        set_light_source_param(1000000, 80);
+        //set_light_source_param(1000000, 80);
         m_is_opened = true;
     }
     catch (const boost::system::system_error& e)
@@ -27,29 +27,65 @@ motion_control::~motion_control()
     //close();
 }
 
-void motion_control::set_light_source_param(int frequency, int duty_cycle, int timeout) 
+bool motion_control::set_light_source_param(int frequency, int duty_cycle, int timeout)
 {
     std::string cmd = "SetLight " + std::to_string(frequency) + " " + std::to_string(duty_cycle);
-    send_command(cmd, timeout);
+    return send_command(cmd, timeout);
 }
 
-void motion_control::move_distance(int num, int step, int speed) 
+bool motion_control::move_distance(int axis, int step, int speed)
 {
-    std::string cmd = "MoveDistance " + std::to_string(num) + " " + std::to_string(step) + " " + std::to_string(speed);
-    send_command(cmd);
+    if (axis != 0 && axis != 1)
+    {
+        return false;
+    }
+    std::string cmd = "MoveDistance " + std::to_string(axis) + " " + std::to_string(step) + " " + std::to_string(speed);
+    return send_command(cmd);
 }
 
-void motion_control::move_position(int num, int step, int speed) 
+bool motion_control::move_position(int axis, int step, int speed)
 {
-    std::string cmd = "MovePosition " + std::to_string(num) + " " + std::to_string(step) + " " + std::to_string(speed);
-    send_command(cmd);
+    if (axis != 0 && axis != 1)
+    {
+        return false;
+    }
+    std::string cmd = "MovePosition " + std::to_string(axis) + " " + std::to_string(step) + " " + std::to_string(speed);
+    return send_command(cmd);
 }
 
-void motion_control::reset()
+bool motion_control::get_position(int& x, int& y)
 {
-    move_distance(0, 1000, 5000);       //先向前移动一小段距离
-    move_distance(0, -30000, 5000);     //再向后移动到限制位
-    send_command("SetZero");            //将限制位设置为零点
+    std::string cmd = "GetPosition";
+    std::string ret("");
+    if(send_command(cmd, 10, &ret))
+    {
+        int pos = ret.find_first_of(' ');
+        x = atoi(ret.substr(0, pos).c_str());
+        y = atoi(ret.substr(pos+1).c_str());
+    }
+    return true;
+}
+
+bool motion_control::reset(int axis)
+{
+    if (axis != 0 && axis != 1)
+    {
+        return false;
+    }
+    move_distance(axis, 1000, 5000);        //先向前移动一小段距离
+    move_distance(axis, -30000, 5000);      //再向后移动到限制位
+    return set_current_position_zero(axis);           //将当前位置设置为零点
+    
+}
+
+bool motion_control::set_current_position_zero(int axis)
+{
+    if(axis != 0 && axis !=1)
+    {
+	    return false;
+    }
+    std::string cmd = "SetZero " + std::to_string(axis);
+    return send_command(cmd);
 }
 
 void motion_control::close() 
@@ -72,7 +108,7 @@ void motion_control::close()
     }
 }
 
-bool motion_control::send_command(const std::string& cmd, int timeout)
+bool motion_control::send_command(const std::string& cmd, int timeout, std::string* ret_string)
 {
     if (timeout <= 0)
     {
@@ -89,6 +125,10 @@ bool motion_control::send_command(const std::string& cmd, int timeout)
         finish = read_reply(reply,'\n');
         if (finish)
         {
+            if(ret_string != nullptr)
+            {
+                *ret_string = reply;
+            }
             return true;
         }
         // 检查是否超时
@@ -101,7 +141,7 @@ bool motion_control::send_command(const std::string& cmd, int timeout)
     }
 }
 
-bool motion_control::read_reply(std::string& reply, char finifh_ch)
+bool motion_control::read_reply(std::string& reply, char finish_ch)
 {
     using namespace boost::asio;
     char sz_buf[256] = { 0 };
@@ -115,8 +155,9 @@ bool motion_control::read_reply(std::string& reply, char finifh_ch)
     if (n > 0)
     {
         reply.append(sz_buf, n);
-        if (reply.back() == finifh_ch)
+        if (reply.back() == finish_ch)
         {
+            //std::cout << reply << std::endl;
             return true;
         }
     } 

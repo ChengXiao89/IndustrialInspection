@@ -202,7 +202,7 @@ void camera_parameter_widget::initialize()
     layout->addStretch(); // 添加弹性空间
 }
 
-void camera_parameter_widget::update_camera(const QJsonObject& obj)
+void camera_parameter_widget::update_camera_parameter(const QJsonObject& obj)
 {
     m_updated_from_code = true;
 	QJsonObject root = obj["camera"].toObject();
@@ -449,7 +449,7 @@ void camera_parameter_widget::update_camera(const QJsonObject& obj)
     update_camera_grab_status(is_grab_running);
 }
 
-void camera_parameter_widget::reset_camera()
+void camera_parameter_widget::reset_camera_parameter()
 {
     m_updated_from_code = true;
     // 采集帧率
@@ -502,7 +502,7 @@ void camera_parameter_widget::on_fps_changed()
 	QJsonObject obj;
     obj["name"] = QString("fps");
 	obj["value"] = value;
-	emit post_change_parameter(obj);
+	emit post_change_camera_parameter(obj);
 }
 
 void camera_parameter_widget::on_start_x_changed()
@@ -520,7 +520,7 @@ void camera_parameter_widget::on_start_x_changed()
     QJsonObject obj;
     obj["name"] = QString("start_x");
     obj["value"] = value;
-    emit post_change_parameter(obj);
+    emit post_change_camera_parameter(obj);
 }
 
 void camera_parameter_widget::on_start_y_changed()
@@ -538,7 +538,7 @@ void camera_parameter_widget::on_start_y_changed()
     QJsonObject obj;
     obj["name"] = QString("start_y");
     obj["value"] = value;
-    emit post_change_parameter(obj);
+    emit post_change_camera_parameter(obj);
 
 }
 
@@ -557,7 +557,7 @@ void camera_parameter_widget::on_width_changed()
     QJsonObject obj;
     obj["name"] = QString("width");
     obj["value"] = value;
-    emit post_change_parameter(obj);
+    emit post_change_camera_parameter(obj);
 }
 
 void camera_parameter_widget::on_height_changed()
@@ -575,7 +575,7 @@ void camera_parameter_widget::on_height_changed()
     QJsonObject obj;
     obj["name"] = QString("height");
     obj["value"] = value;
-    emit post_change_parameter(obj);
+    emit post_change_camera_parameter(obj);
     
 }
 
@@ -588,7 +588,7 @@ void camera_parameter_widget::on_pixel_format_changed(const QString& text)
     QJsonObject obj;
     obj["name"] = QString("pixel_format");
     obj["value"] = text;
-    emit post_change_parameter(obj);
+    emit post_change_camera_parameter(obj);
 }
 
 void camera_parameter_widget::on_exposure_set_changed(const QString& text)
@@ -600,7 +600,7 @@ void camera_parameter_widget::on_exposure_set_changed(const QString& text)
     QJsonObject obj;
     obj["name"] = QString("auto_exposure_mode");
     obj["value"] = text;
-    emit post_change_parameter(obj);
+    emit post_change_camera_parameter(obj);
 }
 
 void camera_parameter_widget::on_auto_exposure_floor_changed()
@@ -618,7 +618,7 @@ void camera_parameter_widget::on_auto_exposure_floor_changed()
     QJsonObject obj;
     obj["name"] = QString("auto_exposure_time_floor");
     obj["value"] = value;
-    emit post_change_parameter(obj);
+    emit post_change_camera_parameter(obj);
 }
 
 void camera_parameter_widget::on_auto_exposure_upper_changed()
@@ -636,7 +636,7 @@ void camera_parameter_widget::on_auto_exposure_upper_changed()
     QJsonObject obj;
     obj["name"] = QString("auto_exposure_time_upper");
     obj["value"] = value;
-    emit post_change_parameter(obj);
+    emit post_change_camera_parameter(obj);
 }
 
 void camera_parameter_widget::on_exposure_time_changed()
@@ -654,7 +654,7 @@ void camera_parameter_widget::on_exposure_time_changed()
     QJsonObject obj;
     obj["name"] = QString("exposure_time");
     obj["value"] = value;
-    emit post_change_parameter(obj);
+    emit post_change_camera_parameter(obj);
 }
 
 void camera_parameter_widget::on_gain_set_changed(const QString& text)
@@ -666,7 +666,7 @@ void camera_parameter_widget::on_gain_set_changed(const QString& text)
     QJsonObject obj;
     obj["name"] = QString("auto_gain_mode");
     obj["value"] = text;
-    emit post_change_parameter(obj);
+    emit post_change_camera_parameter(obj);
 }
 
 void camera_parameter_widget::on_auto_gain_floor_changed()
@@ -684,7 +684,7 @@ void camera_parameter_widget::on_auto_gain_floor_changed()
     QJsonObject obj;
     obj["name"] = QString("auto_gain_floor");
     obj["value"] = value;
-    emit post_change_parameter(obj);
+    emit post_change_camera_parameter(obj);
 }
 
 void camera_parameter_widget::on_auto_gain_upper_changed()
@@ -702,7 +702,7 @@ void camera_parameter_widget::on_auto_gain_upper_changed()
     QJsonObject obj;
     obj["name"] = QString("auto_gain_upper");
     obj["value"] = value;
-    emit post_change_parameter(obj);
+    emit post_change_camera_parameter(obj);
 }
 
 void camera_parameter_widget::on_gain_changed()
@@ -720,7 +720,7 @@ void camera_parameter_widget::on_gain_changed()
     QJsonObject obj;
     obj["name"] = QString("gain");
     obj["value"] = value;
-    emit post_change_parameter(obj);
+    emit post_change_camera_parameter(obj);
 }
 
 /**********************************************************************************/
@@ -827,7 +827,7 @@ void camera_parameter_widget::on_trigger_mode_changed(const QString& text)
     QJsonObject obj;
     obj["name"] = QString("trigger_mode");
     obj["value"] = text;
-    emit post_change_parameter(obj);
+    emit post_change_camera_parameter(obj);
 }
 
 void camera_parameter_widget::on_trigger_source_changed(const QString& text)
@@ -839,7 +839,7 @@ void camera_parameter_widget::on_trigger_source_changed(const QString& text)
     QJsonObject obj;
     obj["name"] = QString("trigger_source");
     obj["value"] = text;
-    emit post_change_parameter(obj);
+    emit post_change_camera_parameter(obj);
 }
 
 void camera_parameter_widget::on_start_grab()

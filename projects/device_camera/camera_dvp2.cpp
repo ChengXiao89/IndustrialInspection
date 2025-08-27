@@ -794,14 +794,17 @@ QString dvp2_camera::get_trigger_mode()
 
 int dvp2_camera::set_trigger_mode(QString trigger_mode)
 {
-    bool trigger_state(false);
-    if(trigger_mode == global_trigger_mode_once)
+    if(get_trigger_mode() != trigger_mode)
     {
-        trigger_state = true;
+        bool trigger_state(false);
+        if (trigger_mode == global_trigger_mode_once)
+        {
+            trigger_state = true;
+        }
+        dvpStatus ret = dvpSetTriggerState(m_device_handle, trigger_state);
+        return map_ret_status(ret);
     }
-    dvpStatus ret = dvpSetTriggerState(m_device_handle, trigger_state);
-	return map_ret_status(ret);
-	
+    return STATUS_SUCCESS;
 }
 
 const QMap<QString, unsigned int>& dvp2_camera::enum_supported_trigger_source()
@@ -846,34 +849,44 @@ QString dvp2_camera::get_trigger_source()
 
 int dvp2_camera::set_trigger_source(QString trigger_source)
 {
-    if(!m_supported_trigger_source.contains(trigger_source))
+    if(get_trigger_source() != trigger_source)
     {
-        return STATUS_ERROR_PARAMETER; // 如果不匹配任何触发源，返回参数错误 
+        if (!m_supported_trigger_source.contains(trigger_source))
+        {
+            return STATUS_ERROR_PARAMETER; // 如果不匹配任何触发源，返回参数错误 
+        }
+        dvpTriggerSource value = static_cast<dvpTriggerSource>(m_supported_trigger_source[trigger_source]);
+        dvpStatus ret = dvpSetTriggerSource(m_device_handle, value);
+        return map_ret_status(ret);
     }
-	dvpTriggerSource value = static_cast<dvpTriggerSource>(m_supported_trigger_source[trigger_source]);
-    dvpStatus ret = dvpSetTriggerSource(m_device_handle, value);
-	return map_ret_status(ret);
+    return STATUS_SUCCESS;
 }
 
 int dvp2_camera::start_grab()
 {
-    dvpStatus ret = dvpStart(m_device_handle);
-    if(ret != DVP_STATUS_OK)
+    if(!m_is_grab_running)
     {
-        return map_ret_status(ret);
-	}
-    m_is_grab_running = true;
+        dvpStatus ret = dvpStart(m_device_handle);
+        if (ret != DVP_STATUS_OK)
+        {
+            return map_ret_status(ret);
+        }
+        m_is_grab_running = true;
+    }
 	return STATUS_SUCCESS;
 }
 
 int dvp2_camera::stop_grab()
 {
-    dvpStatus ret = dvpStop(m_device_handle);
-    if (ret != DVP_STATUS_OK)
+    if(m_is_grab_running)
     {
-        return map_ret_status(ret);
+        dvpStatus ret = dvpStop(m_device_handle);
+        if (ret != DVP_STATUS_OK)
+        {
+            return map_ret_status(ret);
+        }
+        m_is_grab_running = false;
     }
-    m_is_grab_running = false;
     return STATUS_SUCCESS;
 }
 

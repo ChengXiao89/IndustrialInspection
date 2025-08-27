@@ -48,7 +48,7 @@ int calcu_focus_val(const cv::Mat& input_img, const cv::Rect& rect) {
   // 计算总和并缩放
   double sum_val = cv::sum(grad_sq)[0];
 
-  return static_cast<int>(sum_val / 1e6);
+  return static_cast<int>(sum_val / 1e5);
 }
 
 AutoFocus::AutoFocus(motion_control* mc, interface_camera* camera, int fiber_end_count)
@@ -116,7 +116,7 @@ bool AutoFocus::load_model(const std::string& filename)
  */
 void AutoFocus::calibrate_model(int n)
 {
-  mc_->move_distance(n, -50, calibrate_speed);
+  mc_->move_distance(n, -50*calibrate_step, calibrate_speed);
   cv::Mat img = get_image();
   int height = img.rows;
   int width = img.cols;
@@ -126,8 +126,9 @@ void AutoFocus::calibrate_model(int n)
   focus_val_model.clear();
   for (int i = 0; i < 100; i++) {
     mc_->move_distance(n, calibrate_step, calibrate_speed);
-    focus_val_model.push_back(
-        calcu_focus_val(get_image(), cv::Rect(0, 0, calu_width, height)));
+    int value = calcu_focus_val(get_image(), cv::Rect(0, 0, calu_width, height));
+    std::cout << value << std::endl;
+    focus_val_model.push_back(value);
   }
   auto it = std::max_element(focus_val_model.begin(), focus_val_model.end());
   model_max_val = *it;
@@ -156,7 +157,7 @@ int AutoFocus::search_direction(int fiber_num)
       cv::Rect(fiber_num * calu_width, 0, calu_width, image_height));
   // 如果清晰度大于某一阈值，步长设置为小值，否则设置为大值
   if (focus_val > model_max_val * 0.8) {
-    mc_->move_distance(0, 2, 100);
+    mc_->move_distance(0, 2, 200);
     int focus_val_f = calcu_focus_val(
         get_image(),
         cv::Rect(fiber_num * calu_width, 0, calu_width, image_height));
@@ -166,17 +167,51 @@ int AutoFocus::search_direction(int fiber_num)
       direction = 1;  // 负向移动
     }
     return focus_val;
-  } else {
-    mc_->move_distance(0, 5, 100);
+  }
+  else if (focus_val > model_max_val * 0.5) {
+      mc_->move_distance(0, 5, 200);
+      int focus_val_f = calcu_focus_val(
+          get_image(),
+          cv::Rect(fiber_num * calu_width, 0, calu_width, image_height));
+      if (focus_val_f > focus_val + 20) {
+          mc_->move_distance(0, -3, 200);
+          direction = 0;  // 正向移动
+      }
+      else {
+          mc_->move_distance(0, -5, 200);
+          direction = 1;  // 负向移动
+      }
+      return focus_val;
+  }
+  else if (focus_val > model_max_val * 0.3) {
+    mc_->move_distance(0, 10, 200);
     int focus_val_f = calcu_focus_val(
         get_image(),
         cv::Rect(fiber_num * calu_width, 0, calu_width, image_height));
-    if (focus_val_f > focus_val) {
+    if (focus_val_f > focus_val+20) {
+        mc_->move_distance(0, -5, 200);
       direction = 0;  // 正向移动
     } else {
+        mc_->move_distance(0, -10, 200);
       direction = 1;  // 负向移动
     }
     return focus_val;
+  }
+  else
+  {
+      mc_->move_distance(0, 20, 200);
+      int focus_val_f = calcu_focus_val(
+          get_image(),
+          cv::Rect(fiber_num * calu_width, 0, calu_width, image_height));
+      if (focus_val_f > focus_val + 40) {
+          direction = 0;  // 正向移动
+          mc_->move_distance(0, -10, 200);
+      }
+      else {
+          mc_->move_distance(0, -20, 200);
+          direction = 1;  // 负向移动
+      }
+      return focus_val;
   }
 };
 
@@ -198,9 +233,9 @@ void AutoFocus::coarse_localization(int fiber_num) {
   }
   int move_distance = std::abs(model_max_idx - min_idx) * calibrate_step;
   if (direction == 0) {
-    mc_->move_distance(0, move_distance * 0.8, 1000);
+    mc_->move_distance(0, move_distance * 0.9, 1000);
   } else {
-    mc_->move_distance(0, -move_distance * 0.8, 1000);
+    mc_->move_distance(0, -move_distance * 0.9, 1000);
   }
 };
 
@@ -321,10 +356,11 @@ std::vector<cv::Mat> AutoFocus::get_focus_images()
       last_val_list[i] = 0;
       current_val_list[i] = 0;
     }
+    std::cout << "-------------0" <<":" << last_val_list[i] << std::endl;
   }
-  cv::Mat current_img = last_img.clone();
-  for (int i = 0; i < 50; i++) {
-    mc_->move_distance(0, step, 2000);
+  /*cv::Mat current_img = last_img.clone();*/
+  for (int n = 0; n < 50; n++) {
+    mc_->move_distance(0, step, 200);
     cv::Mat current_img = get_image();
     for (int i = 0; i < fiber_nums; i++) {
       if (flag_list[i]) {
@@ -335,11 +371,15 @@ std::vector<cv::Mat> AutoFocus::get_focus_images()
           focus_images.push_back(
               last_img(cv::Rect(i * calu_width, 0, calu_width, image_height))
                   .clone());
+          std::cout <<"------------1" << i << ":" << current_val_list[i] << std::endl;
         }
-        last_img = current_img.clone();
-        last_val_list[i] = current_val_list[i];
+        else
+        {
+            last_val_list[i] = current_val_list[i];
+        }
       }
     }
+    last_img = current_img.clone();
     if (std::none_of(flag_list.begin(), flag_list.end(),
                      [](bool flag) { return flag; })) {
       break;

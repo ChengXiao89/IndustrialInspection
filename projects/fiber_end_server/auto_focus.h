@@ -10,7 +10,7 @@
 #include "motion_control.h"
 #include "../device_camera/interface_camera.h"
 
-int calcu_focus_val(const cv::Mat& input_img, const cv::Rect& rect);
+int calcu_focus_val(const cv::Mat& input_img, const cv::Rect& rect=cv::Rect(0,0,0,0));
 
 class AutoFocus
 {
@@ -37,8 +37,8 @@ class AutoFocus
   interface_camera* m_camera;
   int direction = 0;        // 0正向移动，1负向移动
   std::vector<int> focus_val_model;  // 保存标定的焦距值
-  int calibrate_step = 5;            // 标定时的步长
-  int calibrate_speed = 200;         // 标定时的速度
+  int calibrate_step = 2;            // 标定时的步长
+  int calibrate_speed = 1000;         // 标定时的速度
   int image_height = 0;              // 保存图像高度
   int image_width = 0;               // 保存图像宽度
   int model_max_val = 0;             // 保存模型最大值

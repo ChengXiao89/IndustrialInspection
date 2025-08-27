@@ -183,7 +183,7 @@ struct st_config_data
 			obj["y"] = pos.m_y;
 			positions_array.append(obj);
 		}
-		root["position_list"] = positions_array;
+		root["photo_location_list"] = positions_array;
 		root["fiber_end_count"] = m_fiber_end_count;
 		root["auto_detect"] = m_auto_detect;
 		root["save_path"] = QString::fromStdString(m_save_path);

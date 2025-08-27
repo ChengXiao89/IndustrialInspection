@@ -34,3 +34,5 @@ bin/Debug/common.dll
 bin/Debug/common.pdb
 /bin/Debug
 /lib/Debug
+*.pdb
+/bin/Debug

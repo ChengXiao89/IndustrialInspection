@@ -483,7 +483,7 @@ void thread_misc::process_task(const QVariant& task_data)
         if (param["name"] == "update_photo_location_list")
         {
             std::vector<st_position> positions;
-            QJsonArray posArray = obj["photo_location_list"].toArray();
+            QJsonArray posArray = param["photo_location_list"].toArray();
             for (int i = 0; i < posArray.size(); i++)
             {
                 QJsonObject obj = posArray[i].toObject();
@@ -499,7 +499,7 @@ void thread_misc::process_task(const QVariant& task_data)
         }
         if (param["name"] == "update_fiber_end_count")
         {
-            int fiber_end_count = obj["fiber_end_count"].toInt();
+            int fiber_end_count = param["fiber_end_count"].toInt();
             if (m_config_data->m_fiber_end_count != fiber_end_count)
             {
                 m_config_data->m_fiber_end_count = fiber_end_count;
@@ -508,7 +508,7 @@ void thread_misc::process_task(const QVariant& task_data)
         }
         if (param["name"] == "update_auto_detect")
         {
-            int auto_detect = obj["auto_detect"].toInt();
+            int auto_detect = param["auto_detect"].toInt();
             if (m_config_data->m_auto_detect != auto_detect)
             {
                 m_config_data->m_auto_detect = auto_detect;
@@ -517,7 +517,7 @@ void thread_misc::process_task(const QVariant& task_data)
         }
         if (param["name"] == "update_save_path")
         {
-            QString save_path = obj["save_path"].toString();
+            QString save_path = param["save_path"].toString();
             if (m_config_data->m_save_path != save_path.toStdString())
             {
                 m_config_data->m_save_path = save_path.toStdString();

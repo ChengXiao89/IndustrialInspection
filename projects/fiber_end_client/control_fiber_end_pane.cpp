@@ -240,7 +240,7 @@ void control_fiber_end_pane::update_parameter(const QJsonObject& obj)
     m_edit_move_step_y->setText(QString("%1").arg(m_move_step_y));
 
     
-    QJsonArray posArray = root["m_photo_location_list"].toArray();
+    QJsonArray posArray = root["photo_location_list"].toArray();
     std::vector<st_position> photo_locations;   //拍照位，按照Y值从小到大排列
     for (int i = 0; i < posArray.size(); i++)
     {
@@ -274,7 +274,6 @@ void control_fiber_end_pane::update_parameter(const QJsonObject& obj)
         m_check_auto_detect->setCheckState(Qt::Checked);
     }
     m_edit_image_save_path->setText(root["save_path"].toString());
-    
 }
 
 void control_fiber_end_pane::on_motion_parameter_changed_success(const QJsonObject& obj)
@@ -472,6 +471,7 @@ void control_fiber_end_pane::on_add_photo_location()
 {
     // 将当前位置(m_position_x,m_position_y)加入到拍照位，更新服务器参数
     int cur_row(-1);     //在当前行后面插入一行记录拍照位(m_position_x,m_position_y)
+    bool modify(false);
     for (int i = 0;i < m_photo_location_table->rowCount();i++)
     {
         int pos_y = m_photo_location_table->item(i, 1)->text().toInt();
@@ -483,33 +483,29 @@ void control_fiber_end_pane::on_add_photo_location()
         else if(pos_y == m_position_y)  //如果已存在，更新 X
         {
             cur_row = i;
-            m_photo_location_table->item(i, 0)->setText(QString::number(m_position_x));
+            modify = true;
             break;
         }
         else
         {
-	        //在 cur_row 后面插入一行
-            cur_row += 1;
-            m_photo_location_table->insertRow(cur_row);
-            QTableWidgetItem* xItem = new QTableWidgetItem(QString::number(m_position_x));
-            QTableWidgetItem* yItem = new QTableWidgetItem(QString::number(m_position_y));
-            xItem->setFlags(xItem->flags() & ~Qt::ItemIsEditable);
-            yItem->setFlags(yItem->flags() & ~Qt::ItemIsEditable);
-            m_photo_location_table->setItem(cur_row, 0, xItem);
-            m_photo_location_table->setItem(cur_row, 1, yItem);
             break;
         }
     }
-    // 插入到第一行
-    if(cur_row == -1)
+    if(modify)
     {
-        m_photo_location_table->insertRow(0);
+        m_photo_location_table->item(cur_row, 0)->setText(QString::number(m_position_x));
+    }
+    else
+    {
+        // 在 cur_row 后面插入一行
+        cur_row += 1;
+        m_photo_location_table->insertRow(cur_row);
         QTableWidgetItem* xItem = new QTableWidgetItem(QString::number(m_position_x));
         QTableWidgetItem* yItem = new QTableWidgetItem(QString::number(m_position_y));
         xItem->setFlags(xItem->flags() & ~Qt::ItemIsEditable);
         yItem->setFlags(yItem->flags() & ~Qt::ItemIsEditable);
-        m_photo_location_table->setItem(0, 0, xItem);
-        m_photo_location_table->setItem(0, 1, yItem);
+        m_photo_location_table->setItem(cur_row, 0, xItem);
+        m_photo_location_table->setItem(cur_row, 1, yItem);
     }
 
     update_photo_location_to_server();

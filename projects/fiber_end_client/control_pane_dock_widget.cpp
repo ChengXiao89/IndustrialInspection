@@ -33,6 +33,8 @@ void control_pane_dock_widget::initialize()
     connect(fiber_end_pane, &control_fiber_end_pane::post_set_motion_parameter, this, &control_pane_dock_widget::on_request_set_motion_parameter);
     connect(fiber_end_pane, &control_fiber_end_pane::post_auto_focus, this, &control_pane_dock_widget::on_request_auto_focus);
     connect(fiber_end_pane, &control_fiber_end_pane::post_calibration, this, &control_pane_dock_widget::on_request_calibration);
+    connect(fiber_end_pane, &control_fiber_end_pane::post_update_server_parameter, this, &control_pane_dock_widget::on_request_update_server_parameter);
+
 
     m_control_tree_widget->set_stacked_widget(m_control_stacked_widget); //设置树控件的相机信息控件
     //设置左右控件的宽度显示比例
@@ -132,6 +134,15 @@ void control_pane_dock_widget::on_request_calibration()
 {
     QJsonObject object;
     object["command"] = "client_request_calibration";
+    object["request_id"] = fiber_end_client::generateUniqueRequestId(); // 生成唯一请求 ID
+    m_client->send_message(object);
+}
+
+void control_pane_dock_widget::on_request_update_server_parameter(const QJsonObject& obj)
+{
+    QJsonObject object;
+    object["command"] = "client_request_update_server_parameter";
+    object["param"] = obj;
     object["request_id"] = fiber_end_client::generateUniqueRequestId(); // 生成唯一请求 ID
     m_client->send_message(object);
 }

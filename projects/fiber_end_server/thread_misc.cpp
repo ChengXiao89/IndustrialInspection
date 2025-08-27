@@ -23,12 +23,18 @@ thread_misc::~thread_misc()
         delete m_motion_control;
         m_motion_control = nullptr;
     }
+    if(m_auto_focus != nullptr)
+    {
+        delete m_auto_focus;
+        m_auto_focus = nullptr;
+    }
 }
 
 bool thread_misc::initialize(st_config_data* config_data)
 {
 	if(!setup_motion_control(config_data))
 	{
+        std::cerr << "setup_motion_control fail!" << std::endl;
 		return false;
 	}
     m_auto_focus = new AutoFocus(m_motion_control,m_camera,m_config_data->m_fiber_end_count);
@@ -43,6 +49,10 @@ bool thread_misc::setup_motion_control(st_config_data* config_data)
     unsigned int baud_rate = 115200;
     m_config_data = config_data;
     m_motion_control = new motion_control(port, baud_rate);
+    if(!m_motion_control->open_port())
+    {
+	    return false;
+    }
     m_motion_control->reset(0);
     m_motion_control->reset(1);
     m_motion_control->get_position(m_config_data->m_position_x, m_config_data->m_position_y);
@@ -459,12 +469,60 @@ void thread_misc::process_task(const QVariant& task_data)
             }
 	    }
     }
-    else if (command == "client_request_calibration")
+    else if(command == "client_request_calibration")
     {
         if(m_auto_focus != nullptr)
         {
             m_auto_focus->calibrate_model();
             m_auto_focus->save_model("./calibration.bin");
+        }
+    }
+    else if(command == "client_request_update_server_parameter")
+    {
+        QJsonObject param = obj["param"].toObject();
+        if (param["name"] == "update_photo_location_list")
+        {
+            std::vector<st_position> positions;
+            QJsonArray posArray = obj["photo_location_list"].toArray();
+            for (int i = 0; i < posArray.size(); i++)
+            {
+                QJsonObject obj = posArray[i].toObject();
+                int  x = obj["x"].toInt();
+                int  y = obj["y"].toInt();
+                positions.emplace_back(st_position(x, y));
+            }
+            if(m_config_data->position_list_changed(positions))
+            {
+                m_config_data->m_photo_location_list = positions;
+                m_config_data->save();
+            }
+        }
+        if (param["name"] == "update_fiber_end_count")
+        {
+            int fiber_end_count = obj["fiber_end_count"].toInt();
+            if (m_config_data->m_fiber_end_count != fiber_end_count)
+            {
+                m_config_data->m_fiber_end_count = fiber_end_count;
+                m_config_data->save();
+            }
+        }
+        if (param["name"] == "update_auto_detect")
+        {
+            int auto_detect = obj["auto_detect"].toInt();
+            if (m_config_data->m_auto_detect != auto_detect)
+            {
+                m_config_data->m_auto_detect = auto_detect;
+                m_config_data->save();
+            }
+        }
+        if (param["name"] == "update_save_path")
+        {
+            QString save_path = obj["save_path"].toString();
+            if (m_config_data->m_save_path != save_path.toStdString())
+            {
+                m_config_data->m_save_path = save_path.toStdString();
+                m_config_data->save();
+            }
         }
     }
 }

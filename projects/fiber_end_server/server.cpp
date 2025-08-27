@@ -169,6 +169,10 @@ void fiber_end_server::process_request(const QJsonObject& obj)
     {
         m_thread_misc->add_task(obj);
     }
+    else if(command == "client_request_update_server_parameter")
+    {
+        m_thread_misc->add_task(obj);
+    }
 }
 
 void fiber_end_server::send_process_result(const QVariant& result_data)

@@ -30,6 +30,7 @@ private slots:
 	void on_request_set_motion_parameter(const QJsonObject& obj);	//子控件发送的运控参数设置请求，包括设置光源亮度，运动速度，步长和零点
 	void on_request_auto_focus();									//子控件发送的自动对焦请求
 	void on_request_calibration();									//子控件发送的清晰度标定请求
+	void on_request_update_server_parameter(const QJsonObject& obj);//子控件发送的更新服务器参数请求(位置列表，端面数量，自动检测开关和保存路径)
 	
 	/*******************接收后端消息*********************/
 	void on_camera_parameter_changed_success(const QVariant& obj);	// 接收后端的相机参数修改成功消息，更新界面

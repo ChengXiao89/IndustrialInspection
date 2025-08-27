@@ -15,6 +15,8 @@ public:
 
     ~motion_control();
 
+    bool open_port();       //打开串口
+
     /*************************************************
     * 设置光源亮度
     * frequency     -- 光源频率，单位时间内的周期数（例如：赫兹，Hz）。频率越高，光源的闪烁周期越短。(可以)固定为 1000000
@@ -82,6 +84,8 @@ public:
 private:
     boost::asio::io_context m_io;
     boost::asio::serial_port m_serial;
+    std::string m_port_name{ "" };
+    unsigned int m_baud_rate{ 0 };
     bool m_is_opened{ false };
 
 

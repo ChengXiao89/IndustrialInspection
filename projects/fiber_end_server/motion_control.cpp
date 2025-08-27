@@ -1,30 +1,42 @@
 ﻿#include "motion_control.h"
 
 motion_control::motion_control(const std::string& port_name, unsigned int baud_rate)
-    : m_io(), m_serial(m_io, port_name)
+    : m_io(), m_serial(m_io),m_port_name(port_name),m_baud_rate(baud_rate)
 {
-    try
-    {
-        m_serial.close();           // 先关闭才能正常打开...
-        m_serial.open(port_name);   // 打开串口
-        m_serial.set_option(boost::asio::serial_port_base::baud_rate(baud_rate));
-        m_serial.set_option(boost::asio::serial_port_base::character_size(8));
-        m_serial.set_option(boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::none));
-        m_serial.set_option(boost::asio::serial_port_base::stop_bits(boost::asio::serial_port_base::stop_bits::one));
-        m_serial.set_option(boost::asio::serial_port_base::flow_control(boost::asio::serial_port_base::flow_control::none));
-        // 开机亮光
-        //set_light_source_param(1000000, 80);
-        m_is_opened = true;
-    }
-    catch (const boost::system::system_error& e)
-    {
-        std::cerr << "串口打开失败: " << e.what() << std::endl;
-    }
+    
 }
 
 motion_control::~motion_control()
 {
     //close();
+}
+
+bool motion_control::open_port()
+{
+    boost::system::error_code error_code;
+    m_serial.close(error_code);           // 先关闭才能正常打开...
+    m_serial.open(m_port_name, error_code);
+    if (error_code)
+    {
+        std::cerr << "open_port fail!" << std::endl;
+    	return false;
+    }
+    try
+    {
+        m_serial.set_option(boost::asio::serial_port_base::baud_rate(m_baud_rate));
+        m_serial.set_option(boost::asio::serial_port_base::character_size(8));
+        m_serial.set_option(boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::none));
+        m_serial.set_option(boost::asio::serial_port_base::stop_bits(boost::asio::serial_port_base::stop_bits::one));
+        m_serial.set_option(boost::asio::serial_port_base::flow_control(boost::asio::serial_port_base::flow_control::none));
+    }
+    catch (const boost::system::system_error& e)
+    {
+        m_serial.close();
+        std::cerr << "set port config fail!" << std::endl;
+        return false;
+    }
+    m_is_opened = true;
+    return true;
 }
 
 bool motion_control::set_light_source_param(int frequency, int duty_cycle, int timeout)

@@ -7,6 +7,11 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QMessageBox>
+#include <QHeaderView>
+#include <QFileDialog>
+
+#include "../common/common.h"
+
 
 control_fiber_end_pane::control_fiber_end_pane(QWidget* parent):
 	QWidget(parent)
@@ -152,23 +157,18 @@ void control_fiber_end_pane::initialize()
         QFormLayout* formLayout = new QFormLayout();
         formLayout->setVerticalSpacing(5);
         formLayout->setHorizontalSpacing(10);
-        // Y 轴位置列表
+        // 拍照位置列表
         {
-            m_position_list = new QListWidget();
-            m_position_list->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked);
-            // 插入第一行作为标题
-            QListWidgetItem* item = new QListWidgetItem("Y 轴位置列表");
-            item->setFlags(item->flags() & ~Qt::ItemIsEditable);  // 去掉可编辑属性
-            m_position_list->addItem(item);
-            formLayout->addRow(m_position_list);
+            m_photo_location_table = create_photo_locaion_table();
+            formLayout->addRow(m_photo_location_table);
             // 按钮
             QHBoxLayout* h_layout = new QHBoxLayout();
-            m_push_button_add_position = new QPushButton("添加");
-            connect(m_push_button_add_position, &QPushButton::clicked, this, &control_fiber_end_pane::on_add_y_position);
-            m_push_button_remove_position = new QPushButton("移除");
-            connect(m_push_button_remove_position, &QPushButton::clicked, this, &control_fiber_end_pane::on_remove_y_position);
-            h_layout->addWidget(m_push_button_add_position);
-            h_layout->addWidget(m_push_button_remove_position);
+            m_push_button_add_photo_location = new QPushButton("添加");
+            connect(m_push_button_add_photo_location, &QPushButton::clicked, this, &control_fiber_end_pane::on_add_photo_location);
+            m_push_button_remove_photo_location = new QPushButton("移除");
+            connect(m_push_button_remove_photo_location, &QPushButton::clicked, this, &control_fiber_end_pane::on_remove_photo_location);
+            h_layout->addWidget(m_push_button_add_photo_location);
+            h_layout->addWidget(m_push_button_remove_photo_location);
             formLayout->addRow(h_layout);
         }
         // 影像端面个数和自动检测开关
@@ -176,6 +176,7 @@ void control_fiber_end_pane::initialize()
             QHBoxLayout* h_layout = new QHBoxLayout();
             QLabel* label_fiber_count = new QLabel("影像端面个数 :");
             m_edit_fiber_count = new QLineEdit();
+            connect(m_edit_fiber_count, &QLineEdit::editingFinished, this, &control_fiber_end_pane::on_fiber_end_count_changed);
             m_check_auto_detect = new QCheckBox("自动检测");
             connect(m_check_auto_detect, &QCheckBox::checkStateChanged, this, &control_fiber_end_pane::on_auto_detect_set_changed);
             h_layout->addWidget(label_fiber_count);
@@ -238,13 +239,28 @@ void control_fiber_end_pane::update_parameter(const QJsonObject& obj)
     m_move_step_y = root["move_step_y"].toInt();
     m_edit_move_step_y->setText(QString("%1").arg(m_move_step_y));
 
-    QJsonArray posArray = root["position_list"].toArray();
+    
+    QJsonArray posArray = root["m_photo_location_list"].toArray();
+    std::vector<st_position> photo_locations;   //拍照位，按照Y值从小到大排列
     for (int i = 0; i < posArray.size(); i++)
     {
-        int value = posArray[i].toInt();
-        m_position_list->addItem(QString("%1").arg(value));
+        QJsonObject obj = posArray[i].toObject();
+        int x = obj["x"].toInt();
+        int y = obj["y"].toInt();
+        photo_locations.emplace_back(st_position(x, y));
     }
-
+    std::sort(photo_locations.begin(), photo_locations.end());
+    m_photo_location_table->setRowCount(0);     // 清空原有数据
+    m_photo_location_table->setRowCount(static_cast<int>(photo_locations.size()));    
+    for (int i = 0; i < photo_locations.size(); i++)
+	{
+        QTableWidgetItem* xItem = new QTableWidgetItem(QString::number(photo_locations[i].m_x));
+        QTableWidgetItem* yItem = new QTableWidgetItem(QString::number(photo_locations[i].m_y));
+        xItem->setFlags(xItem->flags() & ~Qt::ItemIsEditable);
+        yItem->setFlags(yItem->flags() & ~Qt::ItemIsEditable);
+        m_photo_location_table->setItem(i, 0, xItem);
+        m_photo_location_table->setItem(i, 1, yItem);
+    }
     m_fiber_end_count = root["fiber_end_count"].toInt();
     m_edit_fiber_count->setText(QString("%1").arg(m_fiber_end_count));
 
@@ -288,6 +304,22 @@ QPushButton* control_fiber_end_pane::create_push_button(const QSize& button_size
     button->setIcon(icon);
     button->setIconSize(button_size);
     return button;
+}
+
+QTableWidget* control_fiber_end_pane::create_photo_locaion_table()
+{
+    // 创建表格对象
+    QTableWidget* table = new QTableWidget(this);
+    table->setColumnCount(2);  // 两列
+    table->setHorizontalHeaderLabels(QStringList() << "X坐标" << "Y坐标");
+    
+    table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);      // 表头自适应
+    table->verticalHeader()->setVisible(false);
+    table->setEditTriggers(QAbstractItemView::NoEditTriggers);              //禁止编辑修改
+    table->setSelectionBehavior(QAbstractItemView::SelectRows);                 //整行选中
+    table->setDragDropMode(QAbstractItemView::NoDragDrop);
+    table->setWindowTitle("拍照位置列表");
+    return table;
 }
 
 void control_fiber_end_pane::on_light_brightness_changed()
@@ -380,7 +412,6 @@ void control_fiber_end_pane::on_reset_position()
     emit post_set_motion_parameter(obj);
 }
 
-
 void control_fiber_end_pane::on_move_to_position()
 {
 	//检查编辑框位置是否与当前位置是否相同
@@ -398,7 +429,6 @@ void control_fiber_end_pane::on_move_to_position()
     obj["y"] = m_position_y;
     emit post_move_camera(obj);
 }
-
 
 void control_fiber_end_pane::on_move_forward_y()
 {
@@ -438,24 +468,137 @@ void control_fiber_end_pane::on_calibration()
     emit post_calibration();
 }
 
-void control_fiber_end_pane::on_add_y_position()
+void control_fiber_end_pane::on_add_photo_location()
 {
-	
+    // 将当前位置(m_position_x,m_position_y)加入到拍照位，更新服务器参数
+    int cur_row(-1);     //在当前行后面插入一行记录拍照位(m_position_x,m_position_y)
+    for (int i = 0;i < m_photo_location_table->rowCount();i++)
+    {
+        int pos_y = m_photo_location_table->item(i, 1)->text().toInt();
+        if(pos_y < m_position_y)
+        {
+            cur_row++;
+	        continue;
+        }
+        else if(pos_y == m_position_y)  //如果已存在，更新 X
+        {
+            cur_row = i;
+            m_photo_location_table->item(i, 0)->setText(QString::number(m_position_x));
+            break;
+        }
+        else
+        {
+	        //在 cur_row 后面插入一行
+            cur_row += 1;
+            m_photo_location_table->insertRow(cur_row);
+            QTableWidgetItem* xItem = new QTableWidgetItem(QString::number(m_position_x));
+            QTableWidgetItem* yItem = new QTableWidgetItem(QString::number(m_position_y));
+            xItem->setFlags(xItem->flags() & ~Qt::ItemIsEditable);
+            yItem->setFlags(yItem->flags() & ~Qt::ItemIsEditable);
+            m_photo_location_table->setItem(cur_row, 0, xItem);
+            m_photo_location_table->setItem(cur_row, 1, yItem);
+            break;
+        }
+    }
+    // 插入到第一行
+    if(cur_row == -1)
+    {
+        m_photo_location_table->insertRow(0);
+        QTableWidgetItem* xItem = new QTableWidgetItem(QString::number(m_position_x));
+        QTableWidgetItem* yItem = new QTableWidgetItem(QString::number(m_position_y));
+        xItem->setFlags(xItem->flags() & ~Qt::ItemIsEditable);
+        yItem->setFlags(yItem->flags() & ~Qt::ItemIsEditable);
+        m_photo_location_table->setItem(0, 0, xItem);
+        m_photo_location_table->setItem(0, 1, yItem);
+    }
+
+    update_photo_location_to_server();
+    
 }
 
-void control_fiber_end_pane::on_remove_y_position()
+void control_fiber_end_pane::on_remove_photo_location()
 {
-	
+    //从控件中移除选中项
+    for (int i = m_photo_location_table->rowCount() - 1; i >= 0; i--)
+    {
+	    if(m_photo_location_table->item(i,0)->isSelected())
+	    {
+            m_photo_location_table->removeRow(i);
+	    }
+    }
+    // 更新服务器参数
+    update_photo_location_to_server();
+}
+
+
+void control_fiber_end_pane::update_photo_location_to_server()
+{
+    // 获取位置列表，更新服务器参数
+    std::vector<st_position> positions;
+    for (int i = 0; i < m_photo_location_table->rowCount(); i++)
+    {
+        positions.emplace_back(st_position(m_photo_location_table->item(i, 0)->text().toInt(),
+            m_photo_location_table->item(i, 1)->text().toInt()));
+    }
+    QJsonObject obj;
+    obj["name"] = QString("update_photo_location_list");
+    QJsonArray array;
+    for (int i = 0; i < positions.size(); i++)
+    {
+        QJsonObject obj;
+        obj["x"] = positions[i].m_x;
+        obj["y"] = positions[i].m_y;
+        array.append(obj);
+    }
+    obj["photo_location_list"] = array;
+    emit post_update_server_parameter(obj);
+}
+
+void control_fiber_end_pane::on_fiber_end_count_changed()
+{
+    int fiber_end_count = m_edit_fiber_count->text().toInt();
+    if (fiber_end_count <= 0)
+    {
+        QMessageBox::information(this, QString::fromStdString("提示"), QString::fromStdString("端面数量必须为大于0的整数!"), QMessageBox::Ok);
+        return;
+    }
+    if (m_fiber_end_count == fiber_end_count)
+    {
+        return;
+    }
+    m_fiber_end_count = fiber_end_count;
+    QJsonObject obj;
+    obj["name"] = QString("update_fiber_end_count");
+    obj["fiber_end_count"] = m_fiber_end_count;
+    emit post_update_server_parameter(obj);
 }
 
 void control_fiber_end_pane::on_auto_detect_set_changed(int check_state)
 {
-	
+    QJsonObject obj;
+    obj["name"] = QString("update_auto_detect");
+    int auto_detect = check_state == 0 ? 0 : 1;
+    obj["auto_detect"] = auto_detect;
+    emit post_update_server_parameter(obj);
 }
 
 void control_fiber_end_pane::on_set_image_save_path()
 {
-	
+    // 弹出选择目录对话框，初始路径为当前保存路径
+    QString dir = QFileDialog::getExistingDirectory(
+        this,
+        tr("选择保存目录"),
+        QString::fromStdString(""), // 假设 m_config.m_save_path 是当前路径
+        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks
+    );
+    if (dir.isEmpty())
+    {
+        return;
+    }
+    QJsonObject obj;
+    obj["name"] = QString("update_save_path");
+    obj["save_path"] = dir;
+    emit post_update_server_parameter(obj);
 }
 
 void control_fiber_end_pane::on_start()

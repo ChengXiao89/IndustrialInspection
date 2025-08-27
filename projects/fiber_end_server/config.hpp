@@ -10,6 +10,8 @@
 #include <QFile>
 #include <QTextStream>
 
+#include "../common/common.h"
+
  // 端面检测配置参数
 struct st_config_data
 {
@@ -18,7 +20,8 @@ struct st_config_data
 	int m_position_x{ 0 }, m_position_y{ 0 };			//相机当前位置，这里不会保存到文件，考虑到重启时恢复位置可能会导致设备损坏，这里由设备自行设置
 														//初始化加载文件时该值默认为0, 在启动运动控制模块之后获取设备位置并更新该值
 	int m_move_step_x{ 1000 }, m_move_step_y{ 1000 };	//上下调整时的移动步长
-	std::vector<int> m_position_list;					//Y 轴上的位置列表，以Y轴端点作为起点，运行状态下，会依次在此位置对焦-检测
+	std::vector<st_position> m_photo_location_list;		//拍照位置列表，复位之后的位置。运行状态下，会依次在此位置自动对焦-检测
+														//自动对焦时需要一个较好的初始位置，以提高自动对焦的速度和效果
 	int m_fiber_end_count{ 4 };							//每张影像上的端面数量. 自动对焦以及后续检测需要使用的参数
 	int m_auto_detect{ 1 };								//对焦完成之后是否自动执行检测 0 -- 否    1 -- 是
 	std::string m_save_path{ "./saveimages" };		//指定保存拍照图像的路径
@@ -69,12 +72,18 @@ struct st_config_data
 		{
 			m_move_step_y = move_step_y_node.toElement().text().toInt();
 		}
-		// 位置列表
+		// 拍照位置列表 (x,y)
+		m_photo_location_list.clear();
 		QDomNodeList positions_node = root.elementsByTagName("position");
 		for (int i = 0; i < positions_node.count(); ++i) 
 		{
 			QDomElement elem = positions_node.at(i).toElement();
-			m_position_list.push_back(elem.text().toInt());
+			if (elem.hasAttribute("x") && elem.hasAttribute("y"))
+			{
+				int x = elem.attribute("x").toInt();
+				int y = elem.attribute("y").toInt();
+				m_photo_location_list.emplace_back(x, y);
+			}
 		}
 		// 端面数量
 		QDomNode count_node = root.namedItem("fiber_end_count");
@@ -126,12 +135,13 @@ struct st_config_data
 		QDomElement move_step_y_node = doc.createElement("move_step_y");
 		move_step_y_node.appendChild(doc.createTextNode(QString::number(m_move_step_y)));
 		root.appendChild(move_step_y_node);
-		// 保存 位置列表
-		for (int pos : m_position_list) 
+		// 保存拍照位置列表
+		for (const auto& pos : m_photo_location_list)
 		{
-			QDomElement position_node = doc.createElement("position");
-			position_node.appendChild(doc.createTextNode(QString::number(pos)));
-			root.appendChild(position_node);
+			QDomElement pos_node = doc.createElement("position");
+			pos_node.setAttribute("x", pos.m_x);
+			pos_node.setAttribute("y", pos.m_y);
+			root.appendChild(pos_node);
 		}
 		// 保存 端面数量
 		QDomElement count_node = doc.createElement("fiber_end_count");
@@ -159,7 +169,6 @@ struct st_config_data
 	QJsonObject save_to_json() const
 	{
 		QJsonObject root;
-		
 		root["light_brightness"] = m_light_brightness;
 		root["move_speed"] = m_move_speed;
 		root["position_x"] = m_position_x;
@@ -167,9 +176,12 @@ struct st_config_data
 		root["move_step_x"] = m_move_step_x;
 		root["move_step_y"] = m_move_step_y;
 		QJsonArray positions_array;
-		for (int pos : m_position_list)
+		for (const auto& pos : m_photo_location_list)
 		{
-			positions_array.append(pos);
+			QJsonObject obj;
+			obj["x"] = pos.m_x;
+			obj["y"] = pos.m_y;
+			positions_array.append(obj);
 		}
 		root["position_list"] = positions_array;
 		root["fiber_end_count"] = m_fiber_end_count;
@@ -177,5 +189,22 @@ struct st_config_data
 		root["save_path"] = QString::fromStdString(m_save_path);
 
 		return root;
+	}
+
+	bool position_list_changed(const std::vector<st_position>& positions) const
+	{
+		if(m_photo_location_list.size() != positions.size())
+		{
+			return true;
+		}
+		for (size_t i = 0; i < positions.size(); i++)
+		{
+			if (m_photo_location_list[i].m_x != positions[i].m_x ||
+				m_photo_location_list[i].m_y != positions[i].m_y)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 };

@@ -21,7 +21,11 @@ public:
 
 	interface_camera* camera() const { return m_camera; } //获取相机对象)
 
+	/***********************
+	 * 初始化功能，包括初始化运控模块、自动对焦对象模块和自动检测模块
+	 ***********************/
 	bool initialize(st_config_data* config_data);
+
 	bool setup_motion_control(st_config_data* config_data);					//启动运控模块
 
 	//将相机参数转换为 JSON 对象，发送给前端

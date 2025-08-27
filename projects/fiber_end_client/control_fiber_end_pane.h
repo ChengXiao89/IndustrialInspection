@@ -17,7 +17,7 @@
 #include <QWidget>
 #include <QLineEdit>
 #include <QPushButton>
-#include <QListWidget>
+#include <QTableWidget>
 #include <QCheckBox>
 
 class control_fiber_end_pane : public QWidget
@@ -29,6 +29,8 @@ public:
 
 	void initialize();
 	QPushButton* create_push_button(const QSize& button_size, const QIcon& icon);		//辅助函数，创建一个按钮并为之设置图标
+	QTableWidget* create_photo_locaion_table();											//辅助函数，创建Table控件显示拍照位置
+	void update_photo_location_to_server();												//辅助函数，将Table中的位置列表更新到服务器
 
 	void update_parameter(const QJsonObject& obj);		//连接服务器时服务器上存在已经打开的相机，或者在打开相机的时候调用，更新所有参数
 	void on_motion_parameter_changed_success(const QJsonObject& obj);	//向服务器发送请求更改运控参数(光源亮度、运动速度、零点和步长)时响应服务器消息
@@ -48,8 +50,9 @@ private slots:
 	void on_move_back_y();					//沿Y轴反向移动指定距离
 	void on_auto_focus();					//自动对焦
 	void on_calibration();					//标定清晰度曲线，设备安装完毕之后需要初始化调用一次，或者在曝光时间、增益、影像尺寸变化时需要标定
-	void on_add_y_position();				//添加 Y 轴位置
-	void on_remove_y_position();			//移除 Y 轴位置
+	void on_add_photo_location();								//添加拍照位置
+	void on_remove_photo_location();							//移除拍照位置
+	void on_fiber_end_count_changed();			//修改端面数量
 	void on_auto_detect_set_changed(int check_state);	//设置自动检测开关
 	void on_set_image_save_path();			//设置影像保存路径
 	void on_start();
@@ -59,6 +62,7 @@ signals:
 	void post_set_motion_parameter(const QJsonObject& obj);		//运动控制，设置运动参数(速度、步长、光源亮度，设为零点)
 	void post_auto_focus();										//自动对焦
 	void post_calibration();									//清晰度标定
+	void post_update_server_parameter(const QJsonObject& obj);	//更新服务器参数，位置列表，端面数量，自动检测开关，保存位置
 private:
 	/******************* 运动控制 *******************/
 	int m_light_brightness{ 0 };								// 光源亮度
@@ -86,9 +90,9 @@ private:
 	/******************* 参数设置 *******************/
 	// 显示服务器上的配置参数, 这里支持修改然后更新到服务器
 	// 显示服务器上设置的位置列表，能够添加、删除和修改. 添加按钮不触发修改，只会向列表中添加一个 -1 项. 在修改和删除时才会触发修改操作
-	QListWidget* m_position_list{ nullptr };							//显示列表，双击修改	
-	QPushButton* m_push_button_add_position{ nullptr };					//添加位置
-	QPushButton* m_push_button_remove_position{ nullptr };				//移除位置
+	QTableWidget* m_photo_location_table{ nullptr };					//拍照位置列表，不支持编辑修改	
+	QPushButton* m_push_button_add_photo_location{ nullptr };			//添加拍照位置
+	QPushButton* m_push_button_remove_photo_location{ nullptr };		//移除拍照位置
 	int m_fiber_end_count{ 1 };											//影像端面个数
 	QLineEdit* m_edit_fiber_count{ nullptr };							//显示并设置影像端面个数
 	int m_auto_detect{ 0 };

@@ -2,6 +2,7 @@
 
 #include <QBoxLayout>
 #include <QSplitter>
+#include <QPixmap>
 
 central_widget::central_widget(fiber_end_client* client, QWidget* parent)
 	:QWidget(parent),m_client(client)
@@ -53,6 +54,12 @@ void central_widget::set_image(QImage img)
 {
 	m_image_viewer->set_image(img); // 更新影像显示
 }
+
+void central_widget::add_detected_image(QImage img)
+{
+    m_thumbnail_bar->add_thumbnail(QPixmap::fromImage(img),0);
+}
+
 
 void central_widget::on_thumbnail_clicked(int index)
 {

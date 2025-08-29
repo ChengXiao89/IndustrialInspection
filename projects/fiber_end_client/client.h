@@ -36,6 +36,9 @@ signals:
 
     void post_motion_parameter_changed_success(const QVariant& data);   //后端成功修改运控参数
     void post_move_camera_success(const QVariant& data);                //后端成功移动相机位置
+    void post_anomaly_detection_once(const QVariant& data);             //后端完成了一张(对焦之后的)影像的检测
+    void post_anomaly_detection_finish(const QVariant& data);           //后端完成了拍摄的一张影像的检测
+    void post_calibration_success();                                    //后端清晰度检校完成
 
 	void post_server_error(const QString& error_message);     //后端返回错误信息
 
@@ -44,8 +47,9 @@ private:
     QString m_server_ip{ "127.0.0.1" };
     quint16 m_server_port{ 5555 };
 
-	QTimer m_retry_timer;           //定时器，启动服务之后可能需要一段时间才能启动完成，
-									//设置一个定时器来检测后端服务是否启动完成并建立连接
+	QTimer m_retry_timer;           // 定时器，启动服务之后可能需要一段时间才能启动完成，
+									// 设置一个定时器来检测后端服务是否启动完成并建立连接
     int m_retry_count{ 0 };
 	int m_max_retry{ 20 };          // 最大重试次数
+    qint32 m_block_size{ 0 };       // 当前待接收的消息长度
 };

@@ -15,7 +15,6 @@ public:
 
 	void update_camera_parameter(const QJsonObject& obj);		//更新界面相机参数
 	void reset_camera_parameter();								//重置界面所有参数
-	void update_camera_grab_status(const QJsonObject& obj);		//更新界面采集状态
 	void update_camera_grab_status(bool is_grab_running);
 
 private slots:

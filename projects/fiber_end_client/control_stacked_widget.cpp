@@ -33,10 +33,10 @@ void control_stacked_widget::reset_camera_parameter()
 	m_camera_parameter_widget->reset_camera_parameter();
 }
 
-void control_stacked_widget::update_camera_grab_status(const QJsonObject& obj)
+void control_stacked_widget::update_camera_grab_status(bool start)
 {
-	m_camera_parameter_widget->update_camera_grab_status(obj);
-	setCurrentIndex(0); // 切换到相机参数页面
+	m_camera_parameter_widget->update_camera_grab_status(start);
+	//setCurrentIndex(0); // 切换到相机参数页面
 }
 
 void control_stacked_widget::update_fiber_end_pane_parameter(const QJsonObject& obj)
@@ -52,4 +52,16 @@ void control_stacked_widget::on_motion_parameter_changed_success(const QJsonObje
 void control_stacked_widget::update_motion_position(int pos_x, int pos_y)
 {
 	m_control_fiber_end_pane->update_motion_position(pos_x, pos_y);
+}
+
+void control_stacked_widget::on_calibration_success()
+{
+	m_camera_parameter_widget->update_camera_grab_status(true);
+	m_control_fiber_end_pane->on_calibration_success();
+}
+
+
+void control_stacked_widget::on_anomaly_detection_finish(const QJsonObject& obj)
+{
+	m_control_fiber_end_pane->on_anomaly_detection_finish(obj);
 }

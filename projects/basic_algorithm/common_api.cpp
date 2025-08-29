@@ -314,7 +314,8 @@ cv::Mat get_roi_image(const cv::Mat& image,const st_detect_box& box, int extent,
 }
 
 
-void draw_boxes_to_image(const cv::Mat& image, const std::vector<std::vector<st_detect_box>>& boxes,const std::string& file_path)
+
+cv::Mat draw_boxes_to_image(const cv::Mat& image, const std::vector<std::vector<st_detect_box>>& boxes)
 {
     cv::Mat img_draw;
     if (image.channels() == 1)
@@ -324,15 +325,15 @@ void draw_boxes_to_image(const cv::Mat& image, const std::vector<std::vector<st_
 
     cv::Scalar red = cv::Scalar(255, 0, 0);
     cv::Scalar green = cv::Scalar(0, 255, 0);
-    for (int i = 0;i < boxes.size();i++)
+    for (int i = 0; i < boxes.size(); i++)
     {
         const std::vector<st_detect_box>& box_array = boxes[i];
-        for (int j = 0;j < box_array.size();j++)
+        for (int j = 0; j < box_array.size(); j++)
         {
             const st_detect_box& box = box_array[j];
             cv::Point top_left(static_cast<int>(box.m_x0), static_cast<int>(box.m_y0));
             cv::Point bottom_right(static_cast<int>(box.m_x1), static_cast<int>(box.m_y1));
-            if(i == 0)
+            if (i == 0)
             {
                 cv::rectangle(img_draw, top_left, bottom_right, red, 2);
             }
@@ -342,6 +343,12 @@ void draw_boxes_to_image(const cv::Mat& image, const std::vector<std::vector<st_
             }
         }
     }
+    return img_draw;
+}
+
+void draw_boxes_to_image(const cv::Mat& image, const std::vector<std::vector<st_detect_box>>& boxes, const std::string& file_path)
+{
+    cv::Mat img_draw = draw_boxes_to_image(image, boxes);
     // 保存图像
     cv::imwrite(file_path, img_draw);
 }

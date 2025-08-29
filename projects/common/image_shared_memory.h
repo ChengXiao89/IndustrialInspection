@@ -10,9 +10,9 @@ struct st_image_meta
     QString shared_memory_key{ "" };
     int width{ 0 };
     int height{ 0 };
+    int index{ 0 };
     int format{ QImage::Format_RGB888 };
 	bool is_new_memory{ false }; // 是否是新创建的共享内存
-    quint64 data_size{ 0 };
     quint64 frame_id{ 0 };
 
 };
@@ -35,8 +35,10 @@ public:
     static st_image_meta json_to_meta(const QJsonObject& json);
 
 private:
-    QSharedMemory m_shared_memory;
+    QString m_key_prefix{""};    //key前缀,不同的模块使用不同的共享内存，通过key区分。这里只需要为不同的模块指定不同的前缀即可
+    QSharedMemory m_buffers[2];     //双缓冲机制,这里两个共享内存也需要使用不同的key区分
     int m_width{0};
     int m_height{0};
     quint64 m_frame_counter{ 0 };
+    int m_index{ 0 };  // 0 或 1
 };

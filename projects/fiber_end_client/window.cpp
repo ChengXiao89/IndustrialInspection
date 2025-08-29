@@ -63,6 +63,9 @@ void main_window::initialize_control_pane()
 	m_control_pane->setMaximumWidth(540);
 	//注册消息
 	connect(m_control_pane, &control_pane_dock_widget::post_camera_trigger_once_success, this, &main_window::on_camera_trigger_once_success);
+	connect(m_control_pane, &control_pane_dock_widget::post_camera_moved_success, this, &main_window::on_camera_moved_success);
+	connect(m_control_pane, &control_pane_dock_widget::post_anomaly_detection_once, this, &main_window::on_anomaly_detection_once);
+
 	addDockWidget(Qt::RightDockWidgetArea, m_control_pane);
 	//初始不显示,只有在打开相机之后才显示
 	m_control_pane->hide();
@@ -128,6 +131,24 @@ void main_window::on_camera_trigger_once_success(QImage image)
 	if(m_central_widget != nullptr)
 	{
 		m_central_widget->set_image(image);
+		m_central_widget->show(); //显示中心窗口视图
+	}
+}
+
+void main_window::on_camera_moved_success(QImage image)
+{
+	if (m_central_widget != nullptr)
+	{
+		m_central_widget->set_image(image);
+		m_central_widget->show(); //显示中心窗口视图
+	}
+}
+
+void main_window::on_anomaly_detection_once(QImage image)
+{
+	if (m_central_widget != nullptr)
+	{
+		m_central_widget->add_detected_image(image);
 		m_central_widget->show(); //显示中心窗口视图
 	}
 }

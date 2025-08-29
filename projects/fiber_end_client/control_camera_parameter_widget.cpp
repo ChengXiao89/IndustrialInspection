@@ -724,36 +724,15 @@ void camera_parameter_widget::on_gain_changed()
 }
 
 /**********************************************************************************/
-void camera_parameter_widget::update_camera_grab_status(const QJsonObject& obj)
-{
-    bool start = obj["param"].toBool();
-    update_camera_grab_status(start);
-}
-
 void camera_parameter_widget::update_camera_grab_status(bool is_grab_running)
 {
     m_updated_from_code = true;
-    //采集中,禁用所有参数设置控件，并视情况禁用采集功能控件
+    //采集中
     if (is_grab_running)
     {
-        //禁用所有参数控件
-        m_fps_spin_box->setEnabled(false);
-        m_start_x_spin_box->setEnabled(false);
-        m_start_y_spin_box->setEnabled(false);
-        m_width_spin_box->setEnabled(false);
-        m_height_spin_box->setEnabled(false);
-        m_pixel_format_combo_box->setEnabled(false);
-        m_auto_exposure_combo_box->setEnabled(false);
-        m_auto_exposure_floor_spin_box->setEnabled(false);
-        m_auto_exposure_upper_spin_box->setEnabled(false);
-        m_exposure_time_spin_box->setEnabled(false);
-        m_auto_gain_combo_box->setEnabled(false);
-        m_auto_gain_floor_spin_box->setEnabled(false);
-        m_auto_gain_upper_spin_box->setEnabled(false);
-        m_gain_spin_box->setEnabled(false);
+        //设置按钮可用状态
         m_trigger_mode_combo_box->setEnabled(false);
         m_trigger_source_combo_box->setEnabled(false);
-        //设置按钮可用状态
         m_start_capture->setEnabled(false);
         m_stop_capture->setEnabled(true);
         if (m_trigger_mode_combo_box->currentText() == global_trigger_mode_once &&
@@ -768,40 +747,6 @@ void camera_parameter_widget::update_camera_grab_status(bool is_grab_running)
     }
     else
     {
-        //恢复所有控件可用状态
-        m_fps_spin_box->setEnabled(true);
-        m_start_x_spin_box->setEnabled(true);
-        m_start_y_spin_box->setEnabled(true);
-        m_width_spin_box->setEnabled(true);
-        m_height_spin_box->setEnabled(true);
-        m_pixel_format_combo_box->setEnabled(true);
-        m_auto_exposure_combo_box->setEnabled(true);
-        if (m_auto_exposure_combo_box->currentText() == global_auto_exposure_closed)
-        {
-            m_exposure_time_spin_box->setEnabled(true);
-            m_auto_exposure_floor_spin_box->setEnabled(false);
-            m_auto_exposure_upper_spin_box->setEnabled(false);
-        }
-        else
-        {
-            m_exposure_time_spin_box->setEnabled(false);
-            m_auto_exposure_floor_spin_box->setEnabled(true);
-            m_auto_exposure_upper_spin_box->setEnabled(true);
-        }
-        m_auto_gain_combo_box->setEnabled(true);
-        if (m_auto_gain_combo_box->currentText() == global_auto_gain_closed)
-        {
-            m_gain_spin_box->setEnabled(true);
-            m_auto_gain_floor_spin_box->setEnabled(false);
-            m_auto_gain_upper_spin_box->setEnabled(false);
-        }
-        else
-        {
-            m_gain_spin_box->setEnabled(false);
-            m_auto_gain_floor_spin_box->setEnabled(true);
-            m_auto_gain_upper_spin_box->setEnabled(true);
-        }
-
         m_trigger_mode_combo_box->setEnabled(true);
         if (m_trigger_mode_combo_box->currentText() == global_trigger_mode_continuous)
         {

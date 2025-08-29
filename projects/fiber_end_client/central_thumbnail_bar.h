@@ -6,6 +6,7 @@
 #include <QWidget>
 #include <QBoxLayout>
 #include <QScrollArea>
+#include <QListWidget>
 
  //缩略图，每个小图片对应一个 id 和绘制控件 QLabel
 struct st_thumbnail
@@ -22,7 +23,6 @@ public:
     virtual ~thumbnail_bar() override;
 
     void resizeEvent(QResizeEvent* event) override;
-    bool eventFilter(QObject* watched, QEvent* event) override;
 
     void initialize();
 
@@ -38,11 +38,8 @@ public slots:
     void on_thumbnail_selected(void* data);     //外部点击列表时需要更新选中对应的缩略图，因此要向缩略图窗口发送消息
 
 private:
-    void update_grid_layout();
 
-    QWidget* m_container{ nullptr };
-    QGridLayout* m_grid_layout{ nullptr };
-    QScrollArea* m_scroll_area{ nullptr };
+    QListWidget* m_list_widget{ nullptr };
 
     QVector<st_thumbnail> m_thumbnail_list;         //缩略图列表，每个缩略图对应一个 id 和 QLabel
     QList<int> m_selected_ids;                      // 当前选中的id集合

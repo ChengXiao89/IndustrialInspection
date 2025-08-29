@@ -18,6 +18,8 @@ public:
 
 	void set_image(QImage img);	// 更新影像显示
 
+	void add_detected_image(QImage img);	//将检测结果添加显示到检测结果窗口中
+
 private slots:
 	void on_thumbnail_clicked(int index);
 

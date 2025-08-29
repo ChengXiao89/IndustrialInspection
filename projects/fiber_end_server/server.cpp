@@ -2,20 +2,21 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDebug>
+#include <QCoreApplication>
 
 fiber_end_server::fiber_end_server(QString ip, quint16 port, QObject* parent)
 	: QTcpServer(parent),m_server_ip(ip),m_server_port(port)
 {
 	m_thread_algorithm = new thread_algorithm(QString::fromStdString("算法处理子线程"), this);
-    connect(m_thread_algorithm, &thread_base::post_task_finished, this, &fiber_end_server::on_algorithm_task_finished);
+    connect(m_thread_algorithm, &thread_base::post_task_finished, this, &fiber_end_server::on_algorithm_task_finished, Qt::QueuedConnection);
 	m_thread_device_enum = new thread_device_enum(QString::fromStdString("设备枚举子线程"),this);
     m_thread_device_enum->set_device_manager(&m_device_manager);
-    connect(m_thread_device_enum, &thread_base::post_task_finished, this, &fiber_end_server::on_device_enum_task_finished);
+    connect(m_thread_device_enum, &thread_base::post_task_finished, this, &fiber_end_server::on_device_enum_task_finished, Qt::QueuedConnection);
 	m_thread_misc = new thread_misc(QString::fromStdString("其他任务子线程"), this);
 	m_thread_misc->set_device_manager(&m_device_manager);
-    connect(m_thread_misc, &thread_base::post_task_finished, this, &fiber_end_server::on_misc_task_finished);
+    connect(m_thread_misc, &thread_base::post_task_finished, this, &fiber_end_server::on_misc_task_finished, Qt::QueuedConnection);
     m_thread_motion_control = new thread_motion_control(QString::fromStdString("运动控制子线程"), this);
-    connect(m_thread_motion_control, &thread_base::post_task_finished, this, &fiber_end_server::on_motion_control_task_finished);
+    connect(m_thread_motion_control, &thread_base::post_task_finished, this, &fiber_end_server::on_motion_control_task_finished, Qt::QueuedConnection);
 }
 
 void fiber_end_server::set_server_config(const QString& ip, quint16 port)
@@ -32,7 +33,9 @@ bool fiber_end_server::start()
         return false;
     }
     //服务器启动时，首先 1.加载配置文件 2.启动运控模块 3.设置光源亮度
-    load_config_file("./config.xml");         //加载配置文件，如果没有则使用默认值
+    QString current_directory = QCoreApplication::applicationDirPath();
+    std::string config_file_path = (current_directory + "/config.xml").toStdString();
+    load_config_file(config_file_path);         //加载配置文件，如果没有则使用默认值
     //启动运控模块
     if(!m_thread_misc->initialize(&m_config_data))
     {
@@ -165,6 +168,10 @@ void fiber_end_server::process_request(const QJsonObject& obj)
     {
         m_thread_misc->add_task(obj);
     }
+    else if (command == "client_request_anomaly_detection")
+    {
+        m_thread_misc->add_task(obj);
+    }
     else if (command == "client_request_calibration")
     {
         m_thread_misc->add_task(obj);
@@ -175,17 +182,31 @@ void fiber_end_server::process_request(const QJsonObject& obj)
     }
 }
 
-void fiber_end_server::send_process_result(const QVariant& result_data)
+void fiber_end_server::send_process_result(const QVariant& result_data, bool task_finished)
 {
     QJsonObject obj = result_data.toJsonObject();
     auto iter = m_map_request_id_to_socket.find(obj["request_id"].toString());
     if (iter != m_map_request_id_to_socket.end())
     {
         QTcpSocket* client = iter.value();
-        m_map_request_id_to_socket.erase(iter);
+        if(task_finished)
+        {
+            m_map_request_id_to_socket.erase(iter);
+        }
         if (client != nullptr)
         {
-            client->write(QJsonDocument(obj).toJson(QJsonDocument::Compact));
+            // 序列化 JSON
+            QByteArray payload = QJsonDocument(obj).toJson(QJsonDocument::Compact);
+
+            // 构造长度前缀
+            qint32 size = payload.size();
+            QByteArray block;
+            QDataStream out(&block, QIODevice::WriteOnly);
+            out.setByteOrder(QDataStream::BigEndian); // 网络字节序
+            out << size;
+            block.append(payload);
+			//写入 socket
+            client->write(block);
             client->flush();
         }
     }
@@ -242,7 +263,7 @@ void fiber_end_server::on_device_enum_task_finished(const QVariant& task_data)
     }
     else
     {
-        send_process_result(task_data);                 // 将任务结果发送给客户端
+        send_process_result(task_data);                         // 将任务结果发送给客户端
     }
 	
 }
@@ -257,7 +278,16 @@ void fiber_end_server::on_misc_task_finished(const QVariant& task_data)
     }
     else
     {
-        send_process_result(task_data);                 // 将任务结果发送给客户端
+        if(obj.contains("task_finish"))
+        {
+            bool finish = obj["task_finish"].toBool();
+            send_process_result(task_data, finish);
+        }
+        else
+        {
+            send_process_result(task_data);                 // 将任务结果发送给客户端
+        }
+        
     }
     /**********************如果是采图任务，需要重置状态***************************/
     if(get_task_type(obj) == TASK_TYPE_TRIGGER_ONCE || get_task_type(obj) == TASK_TYPE_MOVE_CAMERA)

@@ -86,11 +86,61 @@ void fiber_end_client::onConnected()
 
 void fiber_end_client::onReadyRead()
 {
-    QByteArray data = m_socket.readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-    QJsonObject obj = doc.object();
-    qDebug() << "收到后端消息: " << obj["command"].toString() << obj["param"].toInt();
-    receive_message(obj);
+    QDataStream in(&m_socket);
+    in.setByteOrder(QDataStream::BigEndian);
+
+    const qint32 MAX_MESSAGE_SIZE = 1024 * 1024; // 最大1MB
+    const int MAX_MESSAGES_PER_CALL = 10; // 防止阻塞
+    int processedCount = 0;
+
+    while (processedCount < MAX_MESSAGES_PER_CALL) 
+    {
+        // 如果还没有读到长度前缀
+        if (m_block_size == 0) 
+        {
+            if (m_socket.bytesAvailable() < (int)sizeof(qint32))
+                return;
+            in >> m_block_size;
+            if (m_block_size <= 0 || m_block_size > MAX_MESSAGE_SIZE)   //阻止内存攻击
+            {
+                qWarning() << "收到非法消息长度:" << m_block_size;
+                m_block_size = 0;  // 重置准备下一条
+                return;
+            }
+        }
+
+        // 检查是否到齐
+        if (m_socket.bytesAvailable() < m_block_size)
+            return;
+
+        QByteArray payload = m_socket.read(m_block_size);
+        if (payload.size() != m_block_size) 
+        {
+            qWarning() << "读取消息不完整，期望:" << m_block_size << "实际:" << payload.size();
+            m_block_size = 0;
+            return;
+        }
+        m_block_size = 0;
+        processedCount++;
+        // JSON 解析
+        QJsonParseError parseError;
+        QJsonDocument doc = QJsonDocument::fromJson(payload, &parseError);
+        if (parseError.error != QJsonParseError::NoError) 
+        {
+            qWarning() << "JSON 解析失败:" << parseError.errorString() << "前100字节 HEX:" << payload.left(100).toHex();
+            m_block_size = 0;
+            return;
+        }
+
+        QJsonObject obj = doc.object();
+        //qDebug() << "收到消息:" << obj;
+        receive_message(obj);
+    }
+    // 如果还有数据，延迟继续处理
+    if (m_socket.bytesAvailable() > 0) 
+    {
+        QTimer::singleShot(0, this, &fiber_end_client::onReadyRead);
+    }
 }
 
 void fiber_end_client::send_message(const QJsonObject& obj)
@@ -137,7 +187,19 @@ void fiber_end_client::receive_message(const QJsonObject& obj)
     {
         emit post_move_camera_success(QVariant::fromValue(obj));
     }
-    
+    else if (obj["command"].toString() == QString("server_anomaly_detection_once"))
+    {
+        emit post_anomaly_detection_once(QVariant::fromValue(obj));
+    }
+
+    else if (obj["command"].toString() == QString("server_anomaly_detection_finish"))
+    {
+        emit post_anomaly_detection_finish(QVariant::fromValue(obj));
+    }
+    else if (obj["command"].toString() == QString("server_calibration_success"))
+    {
+        emit post_calibration_success();
+    }
 
     if(obj["command"].toString() == QString("server_report_error"))
     {

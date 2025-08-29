@@ -66,3 +66,6 @@ cv::Mat BASIC_ALGORITHM_EXPORT get_roi_image(const cv::Mat& image, const st_dete
 
 //将包围盒绘制在影像上并保存到文件
 void BASIC_ALGORITHM_EXPORT draw_boxes_to_image(const cv::Mat& image, const std::vector<std::vector<st_detect_box>>& boxes, const std::string& file_path);
+
+//将包围盒绘制在影像上并返回绘制结果
+cv::Mat BASIC_ALGORITHM_EXPORT draw_boxes_to_image(const cv::Mat& image, const std::vector<std::vector<st_detect_box>>& boxes);

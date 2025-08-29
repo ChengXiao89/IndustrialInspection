@@ -20,7 +20,7 @@ public:
     bool load_config_file(const std::string& config_file_path);         //加载配置文件，如果没有则使用默认值
 	
 	void process_request(const QJsonObject& obj);                       //处理外部请求
-    void send_process_result(const QVariant& result_data);              //向客户端发送消息
+    void send_process_result(const QVariant& result_data,bool task_finished = true);              //向客户端发送消息
 
     static int get_task_type(const QJsonObject& obj);                   //后端执行完毕之后根据任务类型设置状态
 

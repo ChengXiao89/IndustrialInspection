@@ -32,6 +32,8 @@ void control_pane_dock_widget::initialize()
     connect(fiber_end_pane, &control_fiber_end_pane::post_move_camera, this, &control_pane_dock_widget::on_request_move_camera);
     connect(fiber_end_pane, &control_fiber_end_pane::post_set_motion_parameter, this, &control_pane_dock_widget::on_request_set_motion_parameter);
     connect(fiber_end_pane, &control_fiber_end_pane::post_auto_focus, this, &control_pane_dock_widget::on_request_auto_focus);
+    connect(fiber_end_pane, &control_fiber_end_pane::post_anomaly_detection, this, &control_pane_dock_widget::on_request_anomaly_detection);
+
     connect(fiber_end_pane, &control_fiber_end_pane::post_calibration, this, &control_pane_dock_widget::on_request_calibration);
     connect(fiber_end_pane, &control_fiber_end_pane::post_update_server_parameter, this, &control_pane_dock_widget::on_request_update_server_parameter);
 
@@ -59,6 +61,9 @@ void control_pane_dock_widget::initialize()
 
     connect(m_client, &fiber_end_client::post_motion_parameter_changed_success, this, &control_pane_dock_widget::on_motion_parameter_changed_success);
     connect(m_client, &fiber_end_client::post_move_camera_success, this, &control_pane_dock_widget::on_camera_moved_success);
+    connect(m_client, &fiber_end_client::post_anomaly_detection_once, this, &control_pane_dock_widget::on_anomaly_detection_once);
+    connect(m_client, &fiber_end_client::post_calibration_success, this, &control_pane_dock_widget::on_calibration_success);
+    connect(m_client, &fiber_end_client::post_anomaly_detection_finish, this, &control_pane_dock_widget::on_anomaly_detection_finish);
 
 }
 
@@ -130,8 +135,17 @@ void control_pane_dock_widget::on_request_auto_focus()
     m_client->send_message(object);
 }
 
+void control_pane_dock_widget::on_request_anomaly_detection()
+{
+    QJsonObject object;
+    object["command"] = "client_request_anomaly_detection";
+    object["request_id"] = fiber_end_client::generateUniqueRequestId(); // 生成唯一请求 ID
+    m_client->send_message(object);
+}
+
 void control_pane_dock_widget::on_request_calibration()
 {
+    //先禁用按钮
     QJsonObject object;
     object["command"] = "client_request_calibration";
     object["request_id"] = fiber_end_client::generateUniqueRequestId(); // 生成唯一请求 ID
@@ -156,7 +170,8 @@ void control_pane_dock_widget::on_camera_parameter_changed_success(const QVarian
 void control_pane_dock_widget::on_camera_grab_set_success(const QVariant& obj)
 {
     QJsonObject object = obj.toJsonObject();
-	m_control_stacked_widget->update_camera_grab_status(object); //更新采集状态
+    bool start = object["param"].toBool();
+	m_control_stacked_widget->update_camera_grab_status(start); //更新采集状态
 }
 
 void control_pane_dock_widget::on_camera_trigger_once_success(const QVariant& obj)
@@ -165,7 +180,7 @@ void control_pane_dock_widget::on_camera_trigger_once_success(const QVariant& ob
 	//1. 解析服务端元数据，并从共享内存中读取影像
     QJsonObject meta_object = object["param"].toObject();
     st_image_meta meta = image_shared_memory::json_to_meta(meta_object);
-    QImage img = m_image_shared_memory.read_image(meta);
+    QImage img = m_shared_memory_trigger_image.read_image(meta);
     if (0 && !img.isNull()) 
     {
 		img.save("D:/Temp/client.png"); // 测试保存图片
@@ -204,8 +219,9 @@ void control_pane_dock_widget::on_camera_moved_success(const QVariant& obj)
     {
         QJsonObject meta_object = object["image_data"].toObject();
         st_image_meta meta = image_shared_memory::json_to_meta(meta_object);
-        QImage img = m_image_shared_memory.read_image(meta);
-        emit post_camera_trigger_once_success(img); //向主窗口发送信号，打开中央控件并显示影像
+        QImage img = m_shared_memory_trigger_image.read_image(meta);
+        m_control_stacked_widget->update_camera_grab_status(true);        // 因为是采图成功，所以肯定是打开了采集状态
+        emit post_camera_moved_success(img);                                // 向主窗口发送信号，打开中央控件并显示影像
     }
 }
 
@@ -213,4 +229,43 @@ void control_pane_dock_widget::on_motion_parameter_changed_success(const QVarian
 {
     QJsonObject object = obj.toJsonObject();
     m_control_stacked_widget->on_motion_parameter_changed_success(object);
+}
+
+void control_pane_dock_widget::on_anomaly_detection_once(const QVariant& obj)
+{
+    /**********************************************
+      * obj 包含：
+     * 写入影像信息 obj["image"] = "write image error"(写入影像数据失败)/"success"(取图成功);
+     * 影像数据 obj["image_data"] 写入成功时获取
+     **********************************************/
+    QJsonObject object = obj.toJsonObject();
+    static int index(1);
+	if (object["image"].toString() == "success")
+    {
+        QJsonObject meta_object = object["image_data"].toObject();
+        st_image_meta meta = image_shared_memory::json_to_meta(meta_object);
+        QImage img = m_shared_memory_detect_image.read_image(meta);
+        if(0)
+        {
+            QString file_path = QString("C:/Temp/detect_%1.png").arg(index);
+            index++;
+            img.save(file_path);
+            if (index == 5)
+            {
+                index = 1;
+            }
+        }
+        emit post_anomaly_detection_once(img);         //向主窗口发送信号，在中央控件显示检测结果
+    }
+}
+
+void control_pane_dock_widget::on_calibration_success()
+{
+    m_control_stacked_widget->on_calibration_success();
+}
+
+void control_pane_dock_widget::on_anomaly_detection_finish(const QVariant& obj)
+{
+    QJsonObject object = obj.toJsonObject();
+    m_control_stacked_widget->on_anomaly_detection_finish(object);
 }

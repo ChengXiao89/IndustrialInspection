@@ -4,6 +4,8 @@
 #include <QBuffer>
 #include <QImage>
 
+#include "../common/common_api.h"
+
 thread_misc::thread_misc(QString name, QObject* parent)
     :thread_base(name, parent)
 {
@@ -28,6 +30,11 @@ thread_misc::~thread_misc()
         delete m_auto_focus;
         m_auto_focus = nullptr;
     }
+    if (m_fiber_end_detector != nullptr)
+    {
+        delete m_fiber_end_detector;
+        m_fiber_end_detector = nullptr;
+    }
 }
 
 bool thread_misc::initialize(st_config_data* config_data)
@@ -37,7 +44,7 @@ bool thread_misc::initialize(st_config_data* config_data)
         std::cerr << "setup_motion_control fail!" << std::endl;
 		return false;
 	}
-    m_auto_focus = new AutoFocus(m_motion_control,m_camera,m_config_data->m_fiber_end_count);
+    //m_auto_focus = new AutoFocus(m_motion_control,m_camera,m_config_data->m_fiber_end_count);
     
 
     return true;
@@ -92,7 +99,6 @@ void thread_misc::process_task(const QVariant& task_data)
                 }
                 else
                 {
-                    m_auto_focus->set_camera(m_camera);
                     result_obj["command"] = "server_camera_opened_success";
                     QJsonObject camera_obj = camera_parameter_to_json(m_camera);
                     result_obj["camera"] = camera_obj;        // 将相机参数转换为 JSON 对象
@@ -265,7 +271,7 @@ void thread_misc::process_task(const QVariant& task_data)
                     img.save("D:/Temp/server.png");
                 }
                 st_image_meta meta;
-                if (!m_image_shared_memory.write_image(img, meta))
+                if (!m_shared_memory_trigger_image.write_image(img, meta))
                 {
                     result_obj["command"] = "server_report_error";
                     result_obj["param"] = QString("写入图片数据失败");
@@ -346,7 +352,7 @@ void thread_misc::process_task(const QVariant& task_data)
             else
             {
                 st_image_meta meta;
-                if (!m_image_shared_memory.write_image(img, meta))
+                if (!m_shared_memory_trigger_image.write_image(img, meta))
                 {
                     result_obj["image"] = "write image error";
                 }
@@ -454,28 +460,111 @@ void thread_misc::process_task(const QVariant& task_data)
     }
     else if(command == "client_request_auto_focus")
     {
-	    if(m_auto_focus != nullptr)
-	    {
-            std::vector<cv::Mat> images = m_auto_focus->get_focus_images();
-            if(1)
+        if(m_auto_focus == nullptr)
+        {
+            m_auto_focus = new auto_focus(static_cast<void*>(this));
+        }
+        std::vector<cv::Mat> images = m_auto_focus->get_focus_images();
+        if(1)
+        {
+            for (int i = 0; i < images.size();i++)
             {
-	            for (int i = 0; i < images.size();i++)
-	            {
-                    char szPath[256] = { 0 };
-                    sprintf_s(szPath, "C:/Temp/focus_%d.png", i);
-                    //QString file_path = QString("D:/Temp/focus_%1.png").arg(i);
-                    cv::imwrite(szPath,images[i]);
-	            }
+                char szPath[256] = { 0 };
+                sprintf_s(szPath, "C:/Temp/focus_%d.png", i);
+                //QString file_path = QString("D:/Temp/focus_%1.png").arg(i);
+                cv::imwrite(szPath,images[i]);
             }
-	    }
+        }
+    }
+    else if (command == "client_request_anomaly_detection")
+    {
+        if(m_fiber_end_detector == nullptr)
+        {
+            m_fiber_end_detector = new fiber_end_algorithm;
+            QString current_directory = QCoreApplication::applicationDirPath();
+            std::string onnx_model_path = (current_directory + "/weights/fiber_end_model.onnx").toStdString();
+            std::string faiss_index_path = (current_directory + "/faiss_index/faiss-binary_0").toStdString();
+            std::string shape_model_path = (current_directory + "/shape_model/model.bin").toStdString();
+            if (!m_fiber_end_detector->initialize(onnx_model_path,faiss_index_path,shape_model_path))
+            {
+                delete m_fiber_end_detector;
+                m_fiber_end_detector = nullptr;
+                std::cerr << "fiber_end_algorithm initialize error!" << std::endl;
+                result_obj["command"] = "server_anomaly_detection_finish";
+                result_obj["param"] = QString::fromStdString("算法初始化失败!");
+                emit post_task_finished(QVariant::fromValue(result_obj));
+                return;
+            }
+        }
+        if (m_auto_focus == nullptr)
+        {
+            m_auto_focus = new auto_focus(static_cast<void*>(this));
+        }
+        //得到若干清晰的单通道端面影像，每张影像上包含一个端面，使用算法进行检测
+        std::vector<cv::Mat> images = m_auto_focus->get_focus_images();
+        //对每张自动对焦的结果执行异常检测
+        for (int i = 0;i < images.size();i++)
+        {
+            QJsonObject ret_obj;     //返回的消息对象
+            ret_obj["request_id"] = obj["request_id"];
+            ret_obj["command"] = "server_anomaly_detection_once";      //每检测一张就发送一次消息
+            ret_obj["task_finish"] = false;
+            //1.将影像转换成三通道，后续需要进行模型推理
+            cv::Mat input_image;
+            cvtColor(images[i], input_image, cv::COLOR_GRAY2BGR);
+            if(0)
+            {
+                char sz_path[256] = { 0 };
+                sprintf_s(sz_path, "C:/Temp/server_%d.png", i + 1);
+                cv::imwrite(sz_path, input_image);
+            }
+            //2. 推理并得到结果
+            m_fiber_end_detector->set_data(input_image);
+            int ret = m_fiber_end_detector->run(); //正常情况下返回 0
+            const std::vector<std::vector<st_detect_box>>& result = m_fiber_end_detector->result();
+            int count(0);
+            for (int j = 0; j < result.size(); j++)
+            {
+                count += result[j].size();
+            }
+            //无论是否检测到灰尘，将结果写入到影像并发送到前端
+            cv::Mat output_image = draw_boxes_to_image(input_image, result);
+            QImage dst_image = convert_cvmat_to_qimage(output_image, 3);
+            if (0)
+            {
+                char sz_path[256] = { 0 };
+                sprintf_s(sz_path, "C:/Temp/server_%d.png", i + 1);
+                dst_image.save(sz_path);
+            }
+            st_image_meta meta;
+            if (!m_shared_memory_detect_image.write_image(dst_image, meta))
+            {
+                ret_obj["image"] = "write image error";
+            }
+            else
+            {
+                ret_obj["image"] = "success";
+                QJsonObject json = image_shared_memory::meta_to_json(meta);
+                ret_obj["image_data"] = json;
+            }
+            emit post_task_finished(QVariant::fromValue(ret_obj));
+        }
+        result_obj["command"] = "server_anomaly_detection_finish";
+        result_obj["param"] = QString::fromStdString("success");
+        emit post_task_finished(QVariant::fromValue(result_obj));
     }
     else if(command == "client_request_calibration")
     {
-        if(m_auto_focus != nullptr)
+        if (m_auto_focus == nullptr)
         {
-            m_auto_focus->calibrate_model();
-            m_auto_focus->save_model("./calibration.bin");
+            m_auto_focus = new auto_focus(static_cast<void*>(this));
         }
+        m_auto_focus->calibrate_model();
+        QString current_directory = QCoreApplication::applicationDirPath();
+        std::string calibration_file_path = (current_directory + "/calibration.bin").toStdString();
+        m_auto_focus->save_model(calibration_file_path);
+        result_obj["command"] = "server_calibration_success";
+        emit post_task_finished(QVariant::fromValue(result_obj));
     }
     else if(command == "client_request_update_server_parameter")
     {

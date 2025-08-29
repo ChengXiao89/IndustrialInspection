@@ -35,9 +35,15 @@
     <ClInclude Include="image_shared_memory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="common_api.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="image_shared_memory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="common_api.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

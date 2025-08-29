@@ -9,6 +9,7 @@
 #include <QMessageBox>
 #include <QHeaderView>
 #include <QFileDialog>
+#include <QCoreApplication>
 
 #include "../common/common.h"
 
@@ -105,7 +106,8 @@ void control_fiber_end_pane::initialize()
             // 第一行: 向上的按钮,居中
             QHBoxLayout* h_layout_1 = new QHBoxLayout();
             h_layout_1->addStretch();
-            QIcon icon_up("./icons/move_up.png");
+            QString current_directory = QCoreApplication::applicationDirPath();
+            QIcon icon_up(QString(current_directory + "/icons/move_up.png"));
             m_push_button_move_forward_y = create_push_button(button_size, icon_up);
             connect(m_push_button_move_forward_y, &QPushButton::clicked, this, &control_fiber_end_pane::on_move_forward_y);
             h_layout_1->addWidget(m_push_button_move_forward_y);
@@ -115,12 +117,12 @@ void control_fiber_end_pane::initialize()
             // 第二行: 向左与向右按钮居中，中间留 button_size 尺寸的空白
             QHBoxLayout* h_layout_2 = new QHBoxLayout();
             h_layout_2->addStretch();
-            QIcon icon_left("./icons/move_left.png");
+            QIcon icon_left(QString(current_directory + "/icons/move_left.png"));
             m_push_button_move_back_x = create_push_button(button_size, icon_left);
             connect(m_push_button_move_back_x, &QPushButton::clicked, this, &control_fiber_end_pane::on_move_back_x);
             h_layout_2->addWidget(m_push_button_move_back_x);
             h_layout_2->addSpacing(button_size.width());  // 中间留白
-            QIcon icon_right("./icons/move_right.png");
+            QIcon icon_right(QString(current_directory + "/icons/move_right.png"));
             m_push_button_move_forward_x = create_push_button(button_size, icon_right);
             connect(m_push_button_move_forward_x, &QPushButton::clicked, this, &control_fiber_end_pane::on_move_forward_x);
             h_layout_2->addWidget(m_push_button_move_forward_x);
@@ -129,7 +131,7 @@ void control_fiber_end_pane::initialize()
             // 第三行: 向下的按钮,居中
             QHBoxLayout* h_layout_3 = new QHBoxLayout();
             h_layout_3->addStretch();
-            QIcon icon_down("./icons/move_down.png");
+            QIcon icon_down(QString(current_directory + "/icons/move_down.png"));
             m_push_button_move_back_y = create_push_button(button_size, icon_down);
             connect(m_push_button_move_back_y, &QPushButton::clicked, this, &control_fiber_end_pane::on_move_back_y);
             h_layout_3->addWidget(m_push_button_move_back_y);
@@ -143,9 +145,13 @@ void control_fiber_end_pane::initialize()
             m_push_button_calibration = new QPushButton("清晰度标定");
             connect(m_push_button_calibration, &QPushButton::clicked, this, &control_fiber_end_pane::on_calibration);
             h_layout->addWidget(m_push_button_calibration);
-            m_push_button_auto_focus = new QPushButton("自动对焦");
-            connect(m_push_button_auto_focus, &QPushButton::clicked, this, &control_fiber_end_pane::on_auto_focus);
-            h_layout->addWidget(m_push_button_auto_focus);
+            //m_push_button_auto_focus = new QPushButton("自动对焦");
+            //connect(m_push_button_auto_focus, &QPushButton::clicked, this, &control_fiber_end_pane::on_auto_focus);
+            //h_layout->addWidget(m_push_button_auto_focus);
+
+            m_push_button_anomaly_detection = new QPushButton("异常检测");
+            connect(m_push_button_anomaly_detection, &QPushButton::clicked, this, &control_fiber_end_pane::on_anomaly_detection);
+            h_layout->addWidget(m_push_button_anomaly_detection);
             formLayout->addRow(h_layout);
         }
         QGroupBox* motion_control_group = new QGroupBox("运动控制");
@@ -189,6 +195,7 @@ void control_fiber_end_pane::initialize()
             QHBoxLayout* h_layout = new QHBoxLayout();
             QLabel* label_save_path = new QLabel("保存路径 :");
             m_edit_image_save_path = new QLineEdit();
+            m_edit_image_save_path->setEnabled(false);      //不允许手动编辑
             m_push_button_set_image_save_path = new QPushButton("浏览");
             connect(m_push_button_set_image_save_path, &QPushButton::clicked, this, &control_fiber_end_pane::on_set_image_save_path);
             h_layout->addWidget(label_save_path);
@@ -239,7 +246,6 @@ void control_fiber_end_pane::update_parameter(const QJsonObject& obj)
     m_move_step_y = root["move_step_y"].toInt();
     m_edit_move_step_y->setText(QString("%1").arg(m_move_step_y));
 
-    
     QJsonArray posArray = root["photo_location_list"].toArray();
     std::vector<st_position> photo_locations;   //拍照位，按照Y值从小到大排列
     for (int i = 0; i < posArray.size(); i++)
@@ -294,6 +300,21 @@ void control_fiber_end_pane::update_motion_position(int pos_x, int pos_y)
     m_edit_position_x->setText(QString("%1").arg(m_position_x));
     m_position_y = pos_y;
     m_edit_position_y->setText(QString("%1").arg(m_position_y));
+}
+
+void control_fiber_end_pane::on_calibration_success()
+{
+    m_push_button_calibration->setEnabled(true);
+}
+
+void control_fiber_end_pane::on_anomaly_detection_finish(const QJsonObject& obj)
+{
+    m_push_button_anomaly_detection->setEnabled(true);
+    QString info = obj["param"].toString();
+    if(info != "success")
+    {
+        QMessageBox::information(this, QString::fromStdString("提示"), info, QMessageBox::Ok);
+    }
 }
 
 QPushButton* control_fiber_end_pane::create_push_button(const QSize& button_size, const QIcon& icon)
@@ -462,8 +483,15 @@ void control_fiber_end_pane::on_auto_focus()
     emit post_auto_focus();
 }
 
+void control_fiber_end_pane::on_anomaly_detection()
+{
+    m_push_button_anomaly_detection->setEnabled(false);
+    emit post_anomaly_detection();
+}
+
 void control_fiber_end_pane::on_calibration()
 {
+    m_push_button_calibration->setEnabled(false);
     emit post_calibration();
 }
 

@@ -35,6 +35,9 @@ public:
 	void update_parameter(const QJsonObject& obj);		//连接服务器时服务器上存在已经打开的相机，或者在打开相机的时候调用，更新所有参数
 	void on_motion_parameter_changed_success(const QJsonObject& obj);	//向服务器发送请求更改运控参数(光源亮度、运动速度、零点和步长)时响应服务器消息
 	void update_motion_position(int pos_x, int pos_y);					//向服务器发送请求移动相机之后服务器会返回相机位置，在界面上更新显示
+	void on_calibration_success();										//向服务器发送请求清晰度标定之后服务器会返回信息，在界面上更新按钮状态
+	void on_anomaly_detection_finish(const QJsonObject& obj);			//向服务器发送请求异常检测之后服务器会返回信息，在界面上更新按钮状态
+
 private slots:
 	void on_light_brightness_changed();		//调整光源亮度
 	void on_move_speed_changed();			//调整运动速度
@@ -48,7 +51,8 @@ private slots:
 	void on_move_back_x();					//沿X轴反向移动指定距离
 	void on_move_forward_x();				//沿X轴正向移动指定距离
 	void on_move_back_y();					//沿Y轴反向移动指定距离
-	void on_auto_focus();					//自动对焦
+	void on_auto_focus();					//自动对焦，调试使用
+	void on_anomaly_detection();			//异常检测
 	void on_calibration();					//标定清晰度曲线，设备安装完毕之后需要初始化调用一次，或者在曝光时间、增益、影像尺寸变化时需要标定
 	void on_add_photo_location();								//添加拍照位置
 	void on_remove_photo_location();							//移除拍照位置
@@ -60,7 +64,8 @@ private slots:
 signals:
 	void post_move_camera(const QJsonObject& obj);				//运动控制，移动相机
 	void post_set_motion_parameter(const QJsonObject& obj);		//运动控制，设置运动参数(速度、步长、光源亮度，设为零点)
-	void post_auto_focus();										//自动对焦
+	void post_auto_focus();										//自动对焦，调试使用
+	void post_anomaly_detection();								//异常检测
 	void post_calibration();									//清晰度标定
 	void post_update_server_parameter(const QJsonObject& obj);	//更新服务器参数，位置列表，端面数量，自动检测开关，保存位置
 private:
@@ -84,9 +89,9 @@ private:
 	QPushButton* m_push_button_move_forward_y{ nullptr };
 	QPushButton* m_push_button_move_back_y{ nullptr };
 
-	QPushButton* m_push_button_auto_focus{ nullptr };		//自动对焦(包含拍照取图功能)
+	//QPushButton* m_push_button_auto_focus{ nullptr };		//自动对焦(包含拍照取图功能)
 	QPushButton* m_push_button_calibration{ nullptr };		//标定
-	QPushButton* m_push_button_detect{ nullptr };			//检测功能
+	QPushButton* m_push_button_anomaly_detection{ nullptr };//检测功能,在用户移动到指定位置并取图之后，对拍摄的影像执行自动对焦--异常检测操作，然后将结果显示在界面上
 	/******************* 参数设置 *******************/
 	// 显示服务器上的配置参数, 这里支持修改然后更新到服务器
 	// 显示服务器上设置的位置列表，能够添加、删除和修改. 添加按钮不触发修改，只会向列表中添加一个 -1 项. 在修改和删除时才会触发修改操作

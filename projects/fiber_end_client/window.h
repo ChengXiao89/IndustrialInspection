@@ -38,6 +38,8 @@ private slots:
     void on_camera_opened_success(const QJsonObject& obj);		//相机窗口打开相机之后发送消息，显示控制面板并显示相机参数
 	void on_camera_closed_success();							//相机窗口关闭相机之后发送消息，隐藏控制面板
 	void on_camera_trigger_once_success(QImage image);			//控制面板采图成功之后发送消息，显示采图结果
+	void on_camera_moved_success(QImage image);					//控制面板采图移动相机且采图成功之后发送消息，显示采图结果
+	void on_anomaly_detection_once(QImage image);				//异常检测完成之后发送消息，显示检测结果
 
 	void on_server_report_error(const QString& error_message);      //服务器返回错误信息          
 

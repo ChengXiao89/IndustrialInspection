@@ -37,11 +37,11 @@ void camera_tree_widget::initialize()
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff); // 强制不出现横向滚动条
 
     //图标资源
-    m_icon_opened = QIcon("./icons/camera-opened.png");
-    m_icon_closed = QIcon("./icons/camera-closed.png");
-    m_icon_disabled = QIcon("./icons/camera-disabled.png");
-    m_icon_refresh = QIcon("./icons/camera-refresh.png");
-
+    QString current_directory = QCoreApplication::applicationDirPath();
+    m_icon_opened = QIcon(QString(current_directory + "/icons/camera-opened.png"));
+    m_icon_closed = QIcon(QString(current_directory + "/icons/camera-closed.png"));
+    m_icon_disabled = QIcon(QString(current_directory + "/icons/camera-disabled.png"));
+    m_icon_refresh = QIcon(QString(current_directory + "/icons /camera-refresh.png"));
     if (m_root_item == nullptr)      //添加根节点
     {
         m_root_item = new QTreeWidgetItem(this);
